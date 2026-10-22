@@ -17,6 +17,7 @@ interface PhonePlugin{
  appendDemo(v:{payload:any}):Promise<{stored:boolean}>;setReceiver(v:{enabled:boolean}):Promise<Receiver>;
  exportData(v:{source:string;deviceId:string}):Promise<{saved:boolean}>;
  saveText(v:{name:string;mime:string;content:string}):Promise<{saved:boolean}>;
+ saveGuide():Promise<{saved:boolean}>;
 }
 const plugin=registerPlugin<PhonePlugin>('RiverGuardPhone');
 let database:Promise<IDBDatabase>|undefined;
@@ -35,7 +36,8 @@ const preview:PhonePlugin={
  async appendDemo({payload}){const db=await open();return new Promise((resolve,reject)=>{const tx=db.transaction('readings','readwrite');tx.objectStore('readings').add({source:'simulation',deviceId:'demo-station',timestamp:payload.timestamp,receivedAt:new Date().toISOString(),payload,settings:null});tx.oncomplete=()=>resolve({stored:true});tx.onerror=()=>reject(tx.error);});},
  async setReceiver(){throw new Error('Use the Android APK to receive sensors directly. Browser preview cannot listen for ESP32 packets.');},
  async exportData({source,deviceId}){const rows=(await previewRows()).filter(r=>r.source===source&&r.deviceId===deviceId);return saveDownload('RiverGuard-preview-readings.json',JSON.stringify(rows,null,2),'application/json');},
- async saveText({name,mime,content}){return saveDownload(name,content,mime);}
+ async saveText({name,mime,content}){return saveDownload(name,content,mime);},
+ async saveGuide(){const response=await fetch('./guides/RiverGuard-Friend-Setup.pdf');if(!response.ok)throw new Error('The hardware guide could not be opened. Try again.');const link=document.createElement('a');link.download='RiverGuard-Hardware-Guide.pdf';link.href=URL.createObjectURL(await response.blob());link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);return {saved:true};}
 };
 export const phone:PhonePlugin=native?plugin:preview;
 export const formatTime=(v:string|number|null|undefined)=>v?new Date(v).toLocaleString('en-MY',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}):'No readings yet';
