@@ -40,4 +40,10 @@ mobile/android/app/build/
 mobile/android/build/
 mobile/web/
 mobile/release/
+v2/mobile/web/
+v2/mobile/release/
+v2/mobile/android/app/build/
+v2/mobile/android/build/
+v2/hardware/firmware/include/station_config.h
+*.p12
 # frontend/dist is intentionally shipped for Python-only startup

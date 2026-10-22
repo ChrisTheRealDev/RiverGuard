@@ -1,0 +1,94 @@
+name: RiverGuard V2 preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [v2/rebuild]
+    paths: ['v2/**', '.github/workflows/v2-preview.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: v2/requirements-lock.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install -r v2/requirements-lock.txt
+      - run: python -m pytest v2/tests -q
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            v2/frontend/package-lock.json
+            v2/mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install, check and build the shared interface
+        working-directory: v2/frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+      - name: Synchronize the separate Android app
+        working-directory: v2/mobile
+        run: |
+          npm ci --no-audit --no-fund
+          npx cap sync android
+      - name: Prepare persistent release signing
+        env:
+          SIGNING_KEY: ${{ secrets.RIVERGUARD_ANDROID_KEYSTORE_B64 }}
+        run: |
+          test -n "$SIGNING_KEY"
+          umask 077
+          printf '%s' "$SIGNING_KEY" | base64 --decode > "$RUNNER_TEMP/riverguard-v2.p12"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - name: Install SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Build and validate Android
+        working-directory: v2/mobile/android
+        env:
+          RIVERGUARD_STORE_PASSWORD: ${{ secrets.RIVERGUARD_ANDROID_STORE_PASSWORD }}
+        run: |
+          export RIVERGUARD_KEYSTORE_FILE="$RUNNER_TEMP/riverguard-v2.p12"
+          chmod +x gradlew
+          ./gradlew --no-daemon --max-workers 2 :app:assembleRelease :app:testReleaseUnitTest :app:lintRelease
+      - name: Verify APK and collect evidence
+        run: |
+          mkdir -p v2/mobile/release
+          cp v2/mobile/android/app/build/outputs/apk/release/app-release.apk v2/mobile/release/RiverGuard-V2-Preview.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs v2/mobile/release/*.apk > v2/mobile/release/signature-verification.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging v2/mobile/release/*.apk > v2/mobile/release/apk-details.txt
+          grep -q "package: name='com.riverguard.v2'" v2/mobile/release/apk-details.txt
+          unzip -l v2/mobile/release/*.apk | grep 'assets/public/index.html'
+          (cd v2/mobile/release && sha256sum *.apk > SHA256SUMS.txt)
+          cp v2/mobile/android/app/build/reports/lint-results-release.html v2/mobile/release/
+          cp v2/mobile/android/app/build/test-results/testReleaseUnitTest/*.xml v2/mobile/release/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RiverGuard-V2-Preview
+          path: v2/mobile/release/
+          if-no-files-found: error
+      - name: Remove temporary signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/riverguard-v2.p12"

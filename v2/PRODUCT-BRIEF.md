@@ -1,6 +1,7 @@
 # RiverGuard V2 product brief
 
-Status: discovery. No replacement application or migration is active yet.
+Status: requirements agreed; separate implementation in progress. No replacement
+application or migration is active yet.
 
 ## Purpose
 
@@ -38,16 +39,17 @@ attention", and "Readings unavailable". A normal sensor range must not certify
 drinking, swimming or overall water safety. Missing, stale or uncalibrated data
 must remain visible alongside any known water-level warning.
 
-## Decisions still being discussed
+## Final discovery decisions
 
-- Automatic cross-device history synchronization versus separate local histories.
-- Detailed visual direction within the requested glass-based interface.
-- Rill's role and whether supported devices offer optional AI chat.
-- Data ownership, calibration authority and conflict handling if sync is chosen.
-- Background service behavior, battery controls and real-phone acceptance.
-- Whether collection/alerts must continue when the phone leaves the station's
-  Wi-Fi. That requires an always-on collector or remote transport; a disconnected
-  phone cannot receive ESP32 LAN packets.
+- Separate local histories are acceptable; automatic history synchronization is
+  outside the first V2 release.
+- Visual direction: calm river observatory, deep teal, soft glass and space.
+- Rill is an optional reading guide. Core monitoring works without AI.
+- Both phone and laptop must receive the same station's real readings at once.
+- Staying on the station's private Wi-Fi is sufficient. Off-site remote alerts
+  are outside this release.
+- Background service behavior, battery controls and real-phone acceptance remain
+  implementation/verification concerns rather than unresolved product choices.
 
 ## Rebuild approach
 
