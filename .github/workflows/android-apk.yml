@@ -36,6 +36,9 @@ jobs:
           npx cap sync android
       - name: Install Android build tools
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - name: Install required SDK packages
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build and check Android app
