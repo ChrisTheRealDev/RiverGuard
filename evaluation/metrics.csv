@@ -1,0 +1,3 @@
+method,accuracy,false_positive_rate,missed_anomalies,missed_scenarios,mean_detection_delay_steps
+ai,0.8232142857142857,0.009523809523809525,97,0,0.4
+rules,0.9892857142857143,0.0,6,0,1.2

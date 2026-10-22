@@ -1,0 +1,46 @@
+RIVERGUARD — WINDOWS QUICK START
+
+1. Extract the entire ZIP. Keep the RiverGuard folder together.
+2. Install Python 3.14 with Python on PATH (tested with 3.14.2).
+3. Double-click Setup RiverGuard.cmd. One-time setup needs internet.
+4. For Rill, install Ollama: https://ollama.com/download/windows
+   Then run: ollama pull llama3.2:3b
+   The model is a separate download. Monitoring works without it.
+5. Double-click Start RiverGuard.cmd. Keep the launcher open.
+   It opens your laptop session after both services are ready.
+   Ctrl+C stops the app.
+
+The ZIP starts fresh. Readings, calibration and chats save locally in data/.
+Original personal data, keys and credentials are excluded. Node.js is NOT
+needed to run the package. Local AI speed depends on your computer; Rill
+never silently switches to a smaller model or cloud provider.
+
+CHANGE RILL'S MODEL: Install the model on this laptop with Ollama, for example
+  ollama pull qwen3.5:4b
+Qwen's download is about 3.4 GB; leave additional free space and memory.
+In RiverGuard: Station settings -> Rill's AI connection -> Refresh installed
+models -> choose the model -> Use this model -> Prepare model.
+The selection saves across restarts. No code changes are needed. Existing chats
+stay saved. New models need checking on your river questions; larger/thinking
+models can be slower. Live readings and answer checks are always retained.
+
+PHONE: same private Wi-Fi → Station settings → Create pairing code.
+Open the displayed laptop address on your phone and enter the eight-digit
+code within five minutes. Paired devices share full access, including
+calibration/chats. Revoke them in settings. Pairing does not encrypt HTTP;
+use a trusted private network and never expose ports 8501/8000 to the internet.
+
+If ports are occupied, close the earlier launcher first, or use Stop RiverGuard.cmd
+to stop this folder's background service without clearing saved data. If you sign
+out your only browser, stop/restart the launcher for a fresh owner link.
+
+REAL SENSORS: Sensor setup → register station → download PRIVATE firmware
+configuration. Add Wi-Fi details and upload authenticated firmware once.
+Later calibration changes happen in the app without another firmware upload.
+Never share station_config.h, credentials or your data folder in a friend ZIP.
+
+Before wiring read output/pdf/RiverGuard-Friend-Setup.pdf and hardware/README.md.
+Tank guide: hardware/Tank-Assembly.md. Diagram: hardware/RiverGuard-Wiring.png.
+The specified voltage dividers are required. Actual wiring, usable ranges and
+calibration must be checked on hardware. Demo signals do not establish safe
+water or predict floods. See README.md for details and troubleshooting.

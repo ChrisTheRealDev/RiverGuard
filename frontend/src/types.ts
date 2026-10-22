@@ -1,0 +1,16 @@
+export type Source='simulation'|'esp32';
+export type Field='ph'|'turbidity'|'temperature'|'water_level';
+export type Reading={id?:number;timestamp:string;received_at?:string;device_id:string;source:Source;ph:number|null;turbidity:number|null;temperature:number|null;water_level:number|null;calibrated?:boolean;raw_json?:string;sensor_health_json?:string;calibration_id?:string;config_revision?:number};
+export type Limits={elevated:number;warning:number;rise_limit:number;revision:number};
+export type Signal={id:string|number;timestamp:string;severity:string;kind:string;title:string;explanation:string;count?:number};
+export type Overview={status:{tone:string;title:string;reason:string;action:string;flood:string;rate:number|null;age:number|null;missing:string[]};latest:Reading|null;previous:Reading|null;chart:{points:{timestamp:string;mean:number|null;min:number|null;max:number|null;count:number;segment?:string|number}[];seconds:number;field:Field;unit:string};alerts:{items:Signal[];total:number};settings:Limits;station:{device_id:string;source:Source};updated_at:string;simulation?:Simulation};
+export type Simulation={scenario:string;running:boolean;step:number;scenarios:string[]};
+export type Station={device_id:string;source:Source;latest?:Reading;connected?:boolean;fresh?:boolean};
+export type Session={authenticated:boolean;csrf?:string;provider?:{kind:string;model:string;host:string;label:string;local?:boolean;privacy?:string};lan_urls?:string[]};
+export type Point={mv:number|null;value:number|null};
+export type SensorSettings={enabled:Record<Field,boolean>;ph:Point[]|null;turbidity:Point[]|null;level:{reference:number|null;minimum:number|null;maximum:number|null}|null;temperature_offset:number;verified:boolean};
+export type Setup={record:{revision:number;settings:SensorSettings};latest:Reading|null;connection:{connected:boolean;age:number|null;measured_age:number|null;acknowledged:boolean};signals:Record<string,number|null>};
+export type Message={role:'user'|'assistant';content:string};
+export type ReplyVerification={passed:boolean;reasons:string[];can_continue:boolean};
+export type Job={id:string;chat_id:string;state:string;text:string;verification?:ReplyVerification|null;error?:string|null;retry_at?:number;sample?:string;sequence?:number;queue_position?:number;created?:number;updated?:number;revision?:number;question?:string;user_index?:number;provider?:{model?:string;label?:string;local?:boolean}};
+export type Conversation={id:string;source:Source;device_id?:string;title:string;revision:number;messages:Message[];failure?:any;active_job?:Job|string|null;updated?:number;needs_retry?:boolean};

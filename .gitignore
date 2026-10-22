@@ -1,0 +1,41 @@
+# Personal data, credentials and local state
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+data/
+output/*
+!output/pdf/
+!output/pdf/RiverGuard-Friend-Setup.pdf
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.log
+.env
+.env.*
+secrets.toml
+owner-link.html
+hardware/firmware/include/station_config.h
+*.pem
+*.key
+*.keystore
+*.jks
+# Build caches and machine-specific files
+node_modules/
+**/node_modules/
+**/.vite/
+**/coverage/
+**/.gradle/
+**/.pio/
+*.tsbuildinfo
+.build-tools/
+tmp/
+ui-review/
+/dist/
+**/local.properties
+mobile/android/app/build/
+mobile/android/build/
+# frontend/dist is intentionally shipped for Python-only startup
