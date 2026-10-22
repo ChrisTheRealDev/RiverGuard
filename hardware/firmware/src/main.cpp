@@ -7,6 +7,7 @@
 #include <Preferences.h>
 #include <esp_system.h>
 #include <time.h>
+#include <sys/time.h>
 #if __has_include("../include/station_config.h")
 #include "../include/station_config.h"
 #else
@@ -22,6 +23,16 @@ unsigned long counter=0,nextAttempt=0,retryMs=2000,lastWifiRetry=0;
 bool temperatureStarted=false,levelStarted=false;
 bool enabled(const char* key) { return remote["enabled"][key] | false; }
 void number(JsonObject obj,const char* key,float value) { if(isfinite(value)) obj[key]=value; else obj[key]=nullptr; }
+void useReceiverClockIfUnset(JsonDocument& candidate) {
+  // Prefer an existing NTP/RTC clock. Only a fresh, accepted configuration
+  // response may bootstrap time; never reuse the cached NVS response's date.
+  if(time(nullptr)>=1700000000 || !candidate["server_epoch_seconds"].is<double>()) return;
+  double epoch=candidate["server_epoch_seconds"].as<double>();
+  if(!isfinite(epoch) || epoch<1704067200.0 || epoch>=4102444800.0) return; // 2024..2099 UTC.
+  if(sizeof(time_t)<8 && epoch>2147483647.0) return; // Older ESP32 time_t must not overflow.
+  struct timeval receiverTime={};receiverTime.tv_sec=static_cast<time_t>(epoch);
+  if(settimeofday(&receiverTime,nullptr)==0) Serial.println("Clock set from receiver; keep the phone clock correct.");
+}
 void pollConfiguration() {
   String url(API_URL); int path=url.indexOf("/api/v1/readings");
   if(path<0) return;
@@ -33,6 +44,7 @@ void pollConfiguration() {
     if(!deserializeJson(candidate,body) && candidate["protocol"]=="remote-v1" && candidate["device_id"]==DEVICE_ID && candidate["revision"].is<unsigned long>()) {
       bool valid=true;
       for(const char* key:{"ph","turbidity","temperature","water_level"}) if(!candidate["enabled"][key].is<bool>()) valid=false;
+      if(valid) useReceiverClockIfUnset(candidate);
       if(valid && (remote.isNull() || remote["revision"]!=candidate["revision"])) {
         remote=candidate;
         // Only write on a revision change; never on each sample.
@@ -52,7 +64,7 @@ AnalogSample analogSample(int pin) {
 }
 void collect() {
   time_t now=time(nullptr);
-  if(now<1700000000) { Serial.println("Waiting for NTP clock"); return; }
+  if(now<1700000000) { Serial.println("Waiting for NTP or receiver clock"); return; }
   JsonDocument doc;
   doc["device_id"]=DEVICE_ID;doc["mode"]="hardware";
   doc["setup_protocol"]="remote-v1";doc["config_revision"]=remote["revision"] | 0;

@@ -38,4 +38,6 @@ ui-review/
 **/local.properties
 mobile/android/app/build/
 mobile/android/build/
+mobile/web/
+mobile/release/
 # frontend/dist is intentionally shipped for Python-only startup

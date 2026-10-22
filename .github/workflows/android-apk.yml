@@ -4,9 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['mobile/**', '.github/workflows/android-apk.yml']
-  pull_request:
-    paths: ['mobile/**', '.github/workflows/android-apk.yml']
+    paths: ['mobile/**', 'frontend/vite.phone.config.ts', 'frontend/tsconfig.phone.json', '.github/workflows/android-apk.yml']
 
 permissions:
   contents: read
@@ -32,8 +30,18 @@ jobs:
       - name: Install locked dependencies and check launcher
         run: |
           npm ci --no-audit --no-fund
+          npm ci --prefix ../frontend --no-audit --no-fund
           npm test
+          npm run check:offline
+          npm run build:offline
           npx cap sync android
+      - name: Prepare persistent release signing
+        env:
+          SIGNING_KEY: ${{ secrets.RIVERGUARD_ANDROID_KEYSTORE_B64 }}
+        run: |
+          test -n "$SIGNING_KEY"
+          umask 077
+          printf '%s' "$SIGNING_KEY" | base64 --decode > "$RUNNER_TEMP/riverguard-release.p12"
       - name: Install Android build tools
         uses: android-actions/setup-android@v3
         with:
@@ -42,24 +50,31 @@ jobs:
       - name: Install required SDK packages
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build and check Android app
+        env:
+          RIVERGUARD_STORE_PASSWORD: ${{ secrets.RIVERGUARD_ANDROID_STORE_PASSWORD }}
         run: |
+          export RIVERGUARD_KEYSTORE_FILE="$RUNNER_TEMP/riverguard-release.p12"
           chmod +x android/gradlew
           cd android
-          ./gradlew --no-daemon --max-workers 2 :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+          ./gradlew --no-daemon --max-workers 2 :app:assembleRelease :app:testReleaseUnitTest :app:lintRelease
       - name: Verify installable APK and collect evidence
         run: |
           mkdir -p release
-          cp android/app/build/outputs/apk/debug/app-debug.apk release/RiverGuard-Android-1.0.0-preview.1.apk
+          cp android/app/build/outputs/apk/release/app-release.apk release/RiverGuard-Android-Standalone-2.0.0-preview.1.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs release/*.apk | tee release/signature-verification.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/*.apk | tee release/apk-details.txt
           grep -q "package: name='com.riverguard.app'" release/apk-details.txt
           grep -q "launchable-activity: name='com.riverguard.app.MainActivity'" release/apk-details.txt
           unzip -l release/*.apk | grep 'assets/public/index.html'
           (cd release && sha256sum *.apk > SHA256SUMS.txt)
-          cp android/app/build/reports/lint-results-debug.html release/
+          cp android/app/build/reports/lint-results-release.html release/
+          cp android/app/build/test-results/testReleaseUnitTest/*.xml release/
       - uses: actions/upload-artifact@v4
         with:
-          name: RiverGuard-Android-preview
+          name: RiverGuard-Android-standalone-preview
           path: mobile/release/
           if-no-files-found: error
           retention-days: 14
+      - name: Remove temporary signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/riverguard-release.p12"

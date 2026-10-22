@@ -83,21 +83,27 @@ Isolated review: `.venv\Scripts\python serve.py --web-port 8504 --sensor-port 80
 The consolidated audit and component reviews are under `docs/audit/`. Raw review evidence and the older development checklist are not distributed. Physical sensors and a real phone/virtual keyboard are separate acceptance checks, not implied by browser emulation. `package_app.py` produces a clean ZIP with compiled frontend, source, locked dependencies and hardware guides, excluding databases, personal chats, credentials, local environments and review artifacts.
 
 
-## Android companion
+## Standalone Android app
 
-Download the installable APK from [GitHub Releases](https://github.com/ChrisTheRealDev/RiverGuard/releases).
-The APK is a debug-signed Android preview. It connects to the laptop app on the
-same private Wi-Fi; keep **Start RiverGuard** running, enter its laptop address,
-then pair with the eight-digit code from Station settings. Android 6+ with an
-up-to-date System WebView is required. No Python or Node installation is needed
-on the phone.
+Download the standalone APK from [GitHub Releases](https://github.com/ChrisTheRealDev/RiverGuard/releases).
+It bundles the dashboard and uses SQLite on the phone: no laptop, Python, AI
+model or internet server is needed. Demo readings are clearly labelled synthetic.
+Real sensors connect directly to the phone on the same private Wi-Fi using the
+in-app receiver. Reception works only while the app is visible and enabled.
 
-`mobile/` contains the Capacitor Android companion imported from
-[alamien060512-alt/RiverGuard-Android](https://github.com/alamien060512-alt/RiverGuard-Android),
-revision `a42f293`, with the missing native app module restored and connection
-recovery added for APK builds. Its MIT license is retained in `mobile/LICENSE`.
-It connects to the running laptop app over the same private Wi-Fi; Python and
-Ollama run on the laptop. See `mobile/README.md` for build requirements and limits.
+AI chat is not included in this phone build. Rill provides explicitly rule-based
+reading notes. Read the [standalone guide](docs/STANDALONE-ANDROID.md) for sensor
+setup, initial firmware flashing, local data and update limitations.
+
+The earlier 1.x APK was a laptop companion. Uninstall that old companion before
+installing the first standalone APK because the signing identity changed. Future
+standalone updates use a persistent release key; do not uninstall them to update,
+since that erases local readings/calibration. Export before any unavoidable
+uninstall. Existing laptop data is not automatically migrated to the phone.
+
+Based on the Android companion from
+[alamien060512-alt/RiverGuard-Android](https://github.com/alamien060512-alt/RiverGuard-Android)
+(revision a42f293), with its MIT license retained in `mobile/LICENSE`.
 
 ## Snapshot and known issues
 
