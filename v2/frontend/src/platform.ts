@@ -38,4 +38,4 @@ web.requestNotifications=()=>web.getMonitoring();
 export const platform:Platform=native?registerPlugin<Platform>('RiverGuardV2'):web;
 const writes=new Map<string,Promise<unknown>>();
 export function persist(key:string,value:unknown){const next=(writes.get(key)??Promise.resolve()).catch(()=>{}).then(()=>platform.setState({key,value}));writes.set(key,next);return next;}
-export const formatTime=(v:string|number|null|undefined)=>v?new Date(v).toLocaleString('en-MY',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}):'No readings yet';
+export const formatTime=(v:string|number|null|undefined)=>v?new Date(v).toLocaleString('en-MY',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}):'No readings yet';

@@ -306,7 +306,14 @@ class Store:
         payload.update(device_id='demo-station', mode='simulation')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            return self._append(db, 'simulation', 'demo-station', payload, None, measured, 'demo-'+str(measured))
+            # Paired browsers share this installation's demo. They can tick a
+            # few milliseconds apart and even hold different scenario drafts.
+            # The first accepted sample in each measurement-time slot wins;
+            # another browser neither duplicates nor replaces that evidence.
+            sample = 'demo-slot-'+str(measured//2000)
+            if db.execute("SELECT 1 FROM readings WHERE source='simulation' AND device_id='demo-station' AND sample_id=?", (sample,)).fetchone():
+                return {'stored': True, 'duplicate': True}
+            return self._append(db, 'simulation', 'demo-station', payload, None, measured, sample)
 
     def stations(self):
         with self.connect() as db:

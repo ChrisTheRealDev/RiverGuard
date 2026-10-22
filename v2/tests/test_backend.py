@@ -150,6 +150,31 @@ def test_demo_idempotent_watch_and_preferences(store):
     assert store.get_state('draft:river-01')['value']['temperature_offset'] is None
 
 
+def test_overlapping_demo_browsers_keep_first_sample_in_two_second_slot(store):
+    slot = int(time.time()//2)*2000
+    first = demo(); first['timestamp'] = iso(slot+100)
+    second = demo(); second['timestamp'] = iso(slot+1800); second['ph'] = 7.8
+    barrier = threading.Barrier(2); results = []
+    def append(payload):
+        barrier.wait()
+        results.append(store.append_demo(payload))
+    threads = [threading.Thread(target=append, args=(payload,)) for payload in (first, second)]
+    for thread in threads: thread.start()
+    for thread in threads: thread.join()
+    assert len(results) == 2 and all(result['stored'] for result in results)
+    assert sorted(result['duplicate'] for result in results) == [False, True]
+    rows = store.readings('simulation', 'demo-station')
+    assert rows['total'] == 1
+    saved = rows['items'][0]['payload']
+    assert (saved['timestamp'], saved['ph']) in {(first['timestamp'], first['ph']), (second['timestamp'], second['ph'])}
+    # Replaying the losing request cannot replace the first accepted evidence.
+    store.append_demo(first); store.append_demo(second)
+    assert store.readings('simulation', 'demo-station')['items'][0]['payload'] == saved
+    following = demo(); following['timestamp'] = iso(slot+2100)
+    assert not store.append_demo(following)['duplicate']
+    assert store.readings('simulation', 'demo-station')['total'] == 2
+
+
 @pytest.fixture
 def clients(tmp_path):
     web, sensor = create_apps(tmp_path/'api.db', extra_hosts=('testserver',))
