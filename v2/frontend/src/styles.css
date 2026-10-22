@@ -14,3 +14,28 @@
 .pairing-code{display:block;font-size:27px;letter-spacing:.2em;color:#d0ebd2;margin:4px 0 14px}.pairing-code+p{font-size:11px;line-height:1.8;margin:0}
 
 .chart-period{font-size:10px;color:#91afa5;margin:0 0 10px;line-height:1.7}
+/* Narrow screens retain readable controls; use rows rather than tiny text. */
+.reading-tabs button{font-size:13px}
+.rill-launcher{font-size:12px;min-height:44px}
+@media(max-width:650px){
+ .rill-launcher{width:44px;height:44px;min-height:44px}
+ .reading-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:5px;overflow:visible}
+ .reading-tabs button{font-size:13px;min-height:44px;min-width:0;width:100%}
+ .station-identity strong{font-size:13px;max-width:110px}
+ .station-identity>div>span{font-size:11px;max-width:110px}
+ .source-switch select{font-size:12px;max-width:76px}
+ .condition footer,.condition footer span:last-child{font-size:12px}
+ .eyebrow{font-size:11px;letter-spacing:.12em}
+ .subtle,.chart-period,.reading-note,.setup-context{font-size:12px}
+ .setup-card p{font-size:14px}
+ .form-two label,.form-three label{font-size:13px}
+ .setup-context{gap:8px;flex-wrap:wrap}
+ .reading h3,.check-label strong{font-size:13px}
+ .reading-value{flex-wrap:wrap;gap:6px}
+ .reading-value>span:not(.delta){font-size:12px}
+ .demo-bar>span>span,.condition-label{font-size:12px}
+ .wizard button{font-size:12px}
+ .wizard-footer,.wizard-footer button{font-size:12px}
+ .events-list summary>strong{font-size:14px}
+ .events-list time,.event-phase,.event-history .section-title button{font-size:12px}
+}
