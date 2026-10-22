@@ -1,0 +1,37 @@
+{
+  "repository": "ChrisTheRealDev/RiverGuard",
+  "assets": [
+    {
+      "id": "v1-standalone",
+      "label": "V1 standalone Android (2.0.0-preview.1)",
+      "tag": "android-v2.0.0-preview.1",
+      "filename": "RiverGuard-Android-Standalone-2.0.0-preview.1.apk",
+      "size": 4719750,
+      "sha256": "3c7b3be90f346b7f51b19f8fa1a6657ad95df8d23ad46fb8d724ccb8d332fe20"
+    },
+    {
+      "id": "v2-preview",
+      "label": "V2 observatory preview 1",
+      "tag": "v2-observatory-preview.1",
+      "filename": "RiverGuard-V2-Preview.apk",
+      "size": 4739999,
+      "sha256": "f2c73cf50b9377932edaa8f5c1474b9faae960d78bcdb1d2d8434ccbe3f28060"
+    },
+    {
+      "id": "v1-legacy-companion",
+      "label": "Legacy laptop companion (1.0.0-preview.1)",
+      "tag": "android-v1.0.0-preview.1",
+      "filename": "RiverGuard-Android-1.0.0-preview.1.apk",
+      "size": 5222077,
+      "sha256": "932d77ca4d2a6d1af088c0be7a78437d5f362d3527ff65fd91c370f498558f04"
+    },
+    {
+      "id": "v2-preview-2",
+      "label": "V2 observatory preview 2 \u2014 audit repairs and colour hierarchy",
+      "tag": "v2-observatory-preview.2",
+      "filename": "RiverGuard-V2-Preview-2.apk",
+      "size": 4757369,
+      "sha256": "e21b36913c54e94e80956019faafbff0e68b3c5281b8d4aad62a5046cf36d5b9"
+    }
+  ]
+}

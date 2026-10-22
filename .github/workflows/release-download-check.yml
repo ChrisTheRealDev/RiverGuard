@@ -1,0 +1,41 @@
+name: Public Android download check
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  pull_request:
+    paths:
+      - 'docs/downloads.json'
+      - 'scripts/release_downloads*'
+      - '.github/workflows/release-download-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regression checks
+        run: python -m unittest discover -s scripts -p 'release_downloads_test.py' -v
+      - name: Verify public complete and resumed downloads anonymously
+        # The verifier does not use GITHUB_TOKEN or authenticated asset APIs.
+        if: github.event_name != 'release'
+        run: python scripts/release_downloads.py --report output/release-download-evidence.json
+      - name: Verify this published release against its build manifest
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: python scripts/release_downloads.py --release-tag "$RELEASE_TAG" --report output/release-download-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-android-download-evidence
+          path: output/release-download-evidence.json
+          if-no-files-found: warn

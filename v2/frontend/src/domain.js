@@ -179,13 +179,13 @@
     return facts;
   }
   function syntheticSample(scenario = 'Normal river', step = 0, now = Date.now()) {
-    step = finite(step) ? step : 0; const wave = Math.sin(step * .7), active = step >= 10;
-    // Input for appendDemo; the native store assigns source/device identity itself.
+    step = Math.max(0, Math.floor(finite(step) ? step : 0)) % 120; const wave = Math.sin(step * .7), active = step >= 10;
+    // Deterministic bounded fixture shared with service-owned Demo producers.
     const sample = { timestamp: new Date(now).toISOString(), ph: 7.2 + .08 * wave, turbidity: 14 + 2 * wave, temperature: 27 + .2 * wave, water_level: 30 + .15 * wave, scenario };
-    if (active && /cloud|turbid|combined/i.test(scenario)) sample.turbidity = 65 + (step - 10) * 2;
+    if (active && /cloud|turbid|combined/i.test(scenario)) sample.turbidity = Math.min(250, 65 + (step - 10) * 2);
     if (active && /ph|combined/i.test(scenario)) sample.ph = 9.1;
     if (active && /temperat|combined/i.test(scenario)) sample.temperature = 35;
-    if (active && /ris|water.level|combined/i.test(scenario)) sample.water_level = 45 + (step - 10) * 4;
+    if (active && /ris|water.level|combined/i.test(scenario)) sample.water_level = Math.min(150, 45 + (step - 10) * 4);
     if (active && /sudden/i.test(scenario)) { sample.ph = 5.8; sample.turbidity = 80; }
     return sample;
   }

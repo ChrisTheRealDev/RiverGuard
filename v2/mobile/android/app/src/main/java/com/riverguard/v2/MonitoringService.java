@@ -44,12 +44,13 @@ public final class MonitoringService extends Service {
         renewLocks();
     }
     synchronized void renewLocks(){if(wake!=null&&(!wake.isHeld()||android.os.SystemClock.elapsedRealtime()-lockTime>240000)){wake.acquire(600000);lockTime=android.os.SystemClock.elapsedRealtime();}}
-    void notifyAlert(String device,JSONObject event){
-        if(!runtime.canNotify(event.optInt("level")))return;
+    boolean notifyAlert(String device,JSONObject event){
+        if(!runtime.canNotify(event.optInt("level")))return false;
         boolean warning=event.optInt("level")>=3;String detail=event.optString("detail");
         Notification n=new NotificationCompat.Builder(this,warning?ALERTS:REVIEWS).setSmallIcon(R.drawable.ic_monitor).setContentTitle(event.optString("title")+" · "+device).setContentText(detail).setStyle(new NotificationCompat.BigTextStyle().bigText(detail+"\n"+event.optString("timestamp"))).setContentIntent(open()).setAutoCancel(true).setOnlyAlertOnce(false).setCategory(warning?NotificationCompat.CATEGORY_ALARM:NotificationCompat.CATEGORY_STATUS).setPriority(warning?NotificationCompat.PRIORITY_HIGH:NotificationCompat.PRIORITY_DEFAULT).build();
-        getSystemService(NotificationManager.class).notify(("alert:"+device+":"+event.optString("kind")).hashCode()&0x7fffffff,n);
+        getSystemService(NotificationManager.class).notify(("alert:"+device+":"+event.optString("kind")).hashCode()&0x7fffffff,n);return true;
     }
+    void showRuntimeHealthy(){try{getSystemService(NotificationManager.class).notify(ONGOING_ID,ongoing("ESP32 reception on this Wi-Fi \u00b7 tap to view"));}catch(SecurityException ignored){}}
     void showRuntimeError(){try{getSystemService(NotificationManager.class).notify(ONGOING_ID,ongoing("Monitoring needs attention · open RiverGuard"));}catch(SecurityException ignored){}}
     @Override public void onDestroy(){if(runtime!=null)runtime.stop(this);synchronized(this){if(wake!=null&&wake.isHeld())wake.release();wake=null;}if(wifi!=null&&wifi.isHeld())wifi.release();wifi=null;stopForeground(true);super.onDestroy();}
     @Override public IBinder onBind(Intent intent){return null;}

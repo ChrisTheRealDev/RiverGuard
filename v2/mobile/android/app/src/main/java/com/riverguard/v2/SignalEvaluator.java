@@ -49,7 +49,7 @@ public final class SignalEvaluator {
         }
     }
     public static Double finite(JSONObject object,String key) {Object v=object.opt(key);if(!(v instanceof Number))return null;double d=((Number)v).doubleValue();return Double.isNaN(d)||Double.isInfinite(d)?null:d;}
-    private static long parseTime(String value) {try{return Instant.parse(value).toEpochMilli();}catch(Exception e){return -1;}}
+    static long parseTime(String value) {try{return Instant.parse(value).toEpochMilli();}catch(Exception e){return -1;}}
     private static Double interpolate(double value,JSONArray points) {
         if(points==null||points.length()<2)return null;
         for(int i=1;i<points.length();i++) {
@@ -67,7 +67,7 @@ public final class SignalEvaluator {
     }
     private static double setting(JSONObject watch,String key,double fallback) {Double n=watch==null?null:finite(watch,key);return n==null?fallback:n;}
     public static JSONObject evaluate(JSONArray newestFirst,JSONObject watch,long now) {
-        JSONArray signals=new JSONArray();if(newestFirst.length()==0)return json("signals",signals,"fresh",false,"sample",null,"time",null,"rate",null);
+        JSONArray signals=new JSONArray();if(newestFirst.length()==0)return json("signals",signals,"evidence",new JSONObject(),"fresh",false,"sample",null,"time",null,"rate",null);
         List<Reading> rows=new ArrayList<>();for(int i=0;i<newestFirst.length();i++){JSONObject row=newestFirst.optJSONObject(i);if(row!=null)rows.add(new Reading(row,now));}
         rows.sort((a,b)->{int d=Long.compare(b.time,a.time);return d!=0?d:Long.compare(b.record.optLong("id"),a.record.optLong("id"));});
         if(rows.isEmpty())return json("signals",signals,"fresh",false,"sample",null,"time",null,"rate",null);
@@ -84,8 +84,17 @@ public final class SignalEvaluator {
             int missing=0;for(Double value:current.values)if(value==null)missing++;
             if(missing>0)add(signals,"sensor_health",1,"Some sensors need checking",missing+" readings are unavailable. Check connections and calibration. Any known water-height warning still matters.");
         } else add(signals,"connection",1,"Fresh river readings are missing","Check that the station and phone share Wi-Fi and monitoring is active. Saved readings cannot describe current conditions.");
-        return json("signals",signals,"fresh",current.fresh,"sample",current.sample,"time",current.time>0?Instant.ofEpochMilli(current.time).toString():null,"rate",rate);
+        JSONObject evidence=new JSONObject();
+        evidence(evidence,"water_warning",current.fresh&&current.values[3]!=null,current.values[3]!=null&&current.values[3]>=warning);
+        evidence(evidence,"water_watch",current.fresh&&current.values[3]!=null&&current.values[3]<warning,current.values[3]!=null&&current.values[3]>=elevated);
+        evidence(evidence,"water_rise",current.fresh&&rate!=null,rate!=null&&rate>=rise);
+        double[] lows={6.5,0,20}, highs={8.5,50,32};
+        for(int i=0;i<3;i++) evidence(evidence,FIELDS[i]+"_reference",current.fresh&&current.values[i]!=null,current.values[i]!=null&&(current.values[i]<lows[i]||current.values[i]>highs[i]));
+        boolean missing=false;for(Double value:current.values)missing|=value==null;
+        evidence(evidence,"sensor_health",current.fresh,missing);evidence(evidence,"connection",true,!current.fresh);
+        return json("signals",signals,"evidence",evidence,"fresh",current.fresh,"sample",current.sample,"time",current.time>0?Instant.ofEpochMilli(current.time).toString():null,"measuredAt",current.time>0?Instant.ofEpochMilli(current.time).toString():null,"calibrationRevision",current.revision,"segment",String.valueOf(current.revision)+":"+(watch==null?"unconfigured":watch.toString()),"rate",rate);
     }
+    private static void evidence(JSONObject target,String kind,boolean known,boolean active){put(target,kind,!known?"unknown":active?"active":"clear");}
     private static String fmt(double v){return String.format(Locale.ROOT,"%.1f",v);}
     private static void add(JSONArray values,String kind,int level,String title,String detail){values.put(json("kind",kind,"level",level,"title",title,"detail",detail));}
     private static Double rate(List<Reading> readings) {

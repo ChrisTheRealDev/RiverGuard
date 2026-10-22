@@ -50,25 +50,61 @@ def evaluate(rows, watch, now):
         missing = sum(value is None for value in values.values())
         if missing: add('sensor_health', 1, 'Some sensors need checking', f'{missing} readings are unavailable. Check connections and calibration. Any known water-height warning still matters.')
     else: add('connection', 1, 'Fresh river readings are missing', 'Check that the station and laptop share Wi-Fi and monitoring is active. Saved readings cannot describe current conditions.')
-    return {'signals': signals, 'fresh': current['fresh'], 'sample': current['sample'], 'rate': rate}
+    evidence = {kind: 'unknown' for kind in ('water_warning', 'water_watch', 'water_rise', 'ph_reference', 'turbidity_reference', 'temperature_reference', 'sensor_health', 'connection')}
+    if current['fresh']:
+        evidence['connection'] = 'clear'
+        evidence['sensor_health'] = 'clear'
+        if values['water_level'] is not None:
+            evidence['water_warning'] = evidence['water_watch'] = 'clear'
+            if values['water_level'] >= settings['warning']: evidence['water_watch'] = 'unknown'
+        if rate is not None: evidence['water_rise'] = 'clear'
+        for field in ('ph', 'turbidity', 'temperature'):
+            if values[field] is not None: evidence[field+'_reference'] = 'clear'
+    for signal in signals: evidence[signal['kind']] = 'active'
+    return {'signals': signals, 'evidence': evidence, 'fresh': current['fresh'], 'sample': current['sample'], 'rate': rate,
+            'measuredAt': iso(current['time']), 'calibrationRevision': current['revision']}
 
 
 def apply(previous, evaluation, now):
     state = previous or {'conditions': {}}
     conditions = state.setdefault('conditions', {}); events = []
     sample = evaluation['sample']; new_sample = sample != state.get('sample', '')
+    segment = [evaluation.get('calibrationRevision'), evaluation.get('watchRevision')]
+    changed_segment = state.get('segment') != segment
+    if changed_segment:
+        if any(c.get('active') for c in conditions.values()):
+            events.append({'kind': 'settings', 'phase': 'settings_changed', 'level': 1, 'title': 'Settings changed — recheck needed', 'detail': 'A calibration or watch setting changed. This is not evidence of river recovery.', 'timestamp': iso(now), 'sample': sample})
+        for kind, old in conditions.items():
+            if kind not in ('connection', 'sensor_health'):
+                old['clearCount'] = 0
+                if old['active']: old['recheck'] = True
+        state['segment'] = segment
     active = set()
     for signal in evaluation['signals']:
         kind = signal['kind']; active.add(kind); old = conditions.get(kind)
-        if not old or not old['active'] or old['level'] < signal['level']:
+        if not old or not old['active'] or old['level'] < signal['level'] or (changed_segment and kind not in ('connection', 'sensor_health')):
             events.append(signal | {'phase': 'active', 'timestamp': iso(now), 'sample': sample})
-        conditions[kind] = {'active': True, 'level': signal['level'], 'clearCount': 0}
+        conditions[kind] = {'active': True, 'level': signal['level'], 'clearCount': 0, 'title': signal['title'], 'detail': signal['detail'], 'measuredAt': evaluation.get('measuredAt'), 'lastKnown': False, 'recheck': old.get('recheck', False) if old and old['active'] else False}
+    for kind, old in conditions.items():
+        if old['active'] and kind not in active:
+            old['lastKnown'] = True
     if new_sample and evaluation['fresh']:
         for kind, old in conditions.items():
             if kind in active or not old['active']: continue
+            evidence = evaluation.get('evidence', {}).get(kind)
+            if kind == 'monitoring': evidence = evaluation.get('evidence', {}).get('sensor_health')
+            if evidence != 'clear':
+                old['clearCount'] = 0
+                continue
             old['clearCount'] += 1
             if old['clearCount'] >= 3:
                 old['active'] = False
-                events.append({'kind': kind, 'phase': 'recovered', 'level': 0, 'title': 'Reading check returned within its reference', 'detail': 'Three fresh readings no longer show the previous '+kind.replace('_', ' ')+' condition. This does not establish water safety.', 'timestamp': iso(now), 'sample': sample})
+                recheck = old.get('recheck', False)
+                old['recheck'] = False
+                events.append({'kind': kind, 'phase': 'rechecked' if recheck else 'recovered', 'level': 0, 'title': 'Fresh readings checked against updated settings' if recheck else 'Reading check returned within its reference', 'detail': 'Three fresh readings do not trigger this condition under the current settings. '+('Settings changed; this does not show an environmental improvement. ' if recheck else '')+'This does not establish water safety.', 'timestamp': iso(now), 'sample': sample})
     state['sample'] = sample
+    for event in events:
+        event.update({key: evaluation.get(key) for key in ('measuredAt', 'calibrationRevision', 'watchRevision', 'watchSettings')})
+        event['evaluatedAt'] = iso(now)
+        event['provenance'] = 'captured'
     return state, events

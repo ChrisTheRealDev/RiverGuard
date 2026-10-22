@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "retry_deadline.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
@@ -106,14 +107,15 @@ void networkWorker(void* value) {
   Destination& destination=*static_cast<Destination*>(value);
   Packet* pending=nullptr;
   unsigned long nextPost=0,nextConfig=0,retryMs=2000;
+  bool postScheduled=false,configScheduled=false;
   while(true) {
     if(WiFi.status()!=WL_CONNECTED){vTaskDelay(pdMS_TO_TICKS(250));continue;}
     unsigned long now=millis();
-    if(static_cast<long>(now-nextConfig)>=0) {
-      pollConfiguration(destination);nextConfig=millis()+10000;
+    if(deadlineReady(configScheduled,now,nextConfig)) {
+      pollConfiguration(destination);nextConfig=millis()+10000;configScheduled=true;
     }
     if(!pending)xQueueReceive(destination.queue,&pending,0);
-    if(!pending||static_cast<long>(millis()-nextPost)<0){vTaskDelay(pdMS_TO_TICKS(50));continue;}
+    if(!pending||!deadlineReady(postScheduled,millis(),nextPost)){vTaskDelay(pdMS_TO_TICKS(50));continue;}
     HTTPClient http;http.setConnectTimeout(1500);http.setTimeout(2500);
     int status=-1;
     if(http.begin(destination.url)) {
@@ -122,15 +124,15 @@ void networkWorker(void* value) {
     }
     http.end();
     if(status>=200&&status<300) {
-      delete pending;pending=nullptr;retryMs=2000;nextPost=0;
+      delete pending;pending=nullptr;retryMs=2000;postScheduled=false;
     }else if(status==401||status==403) {
       Serial.printf("%s credential rejected; check that receiver's private setup.\n",destination.cacheKey);
-      delete pending;pending=nullptr;nextPost=millis()+30000;
+      delete pending;pending=nullptr;nextPost=millis()+30000;postScheduled=true;
     }else if(status>=400&&status<500&&status!=408&&status!=429) {
       Serial.printf("%s rejected one sample (%d); check time, revision and sensor health.\n",destination.cacheKey,status);
-      delete pending;pending=nullptr;nextPost=millis()+2000;
+      delete pending;pending=nullptr;nextPost=millis()+2000;postScheduled=true;
     }else {
-      nextPost=millis()+retryMs;retryMs=min(retryMs*2,30000UL);
+      nextPost=millis()+retryMs;postScheduled=true;retryMs=min(retryMs*2,30000UL);
     }
   }
 }

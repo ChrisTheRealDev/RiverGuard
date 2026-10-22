@@ -1,0 +1,1408 @@
+{
+  "now": 1792641600000,
+  "cases": [
+    {
+      "name": "clear",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 160
+            },
+            "sensor_health": {}
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [],
+        "evidence": {
+          "water_warning": "clear",
+          "water_watch": "clear",
+          "water_rise": "unknown",
+          "ph_reference": "clear",
+          "turbidity_reference": "clear",
+          "temperature_reference": "clear",
+          "sensor_health": "clear",
+          "connection": "clear"
+        },
+        "values": [
+          7,
+          10,
+          27,
+          40
+        ],
+        "rate": null
+      }
+    },
+    {
+      "name": "high",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 80
+            },
+            "sensor_health": {}
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [
+          "water_warning"
+        ],
+        "evidence": {
+          "water_warning": "active",
+          "water_watch": "unknown",
+          "water_rise": "unknown",
+          "ph_reference": "clear",
+          "turbidity_reference": "clear",
+          "temperature_reference": "clear",
+          "sensor_health": "clear",
+          "connection": "clear"
+        },
+        "values": [
+          7,
+          10,
+          27,
+          120
+        ],
+        "rate": null
+      }
+    },
+    {
+      "name": "water-fault",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 160
+            },
+            "sensor_health": {
+              "water_level": "timeout"
+            }
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [
+          "sensor_health"
+        ],
+        "evidence": {
+          "water_warning": "unknown",
+          "water_watch": "unknown",
+          "water_rise": "unknown",
+          "ph_reference": "clear",
+          "turbidity_reference": "clear",
+          "temperature_reference": "clear",
+          "sensor_health": "active",
+          "connection": "clear"
+        },
+        "values": [
+          7,
+          10,
+          27,
+          null
+        ],
+        "rate": null
+      }
+    },
+    {
+      "name": "high-with-ph-fault",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 80
+            },
+            "sensor_health": {
+              "ph": "missing"
+            }
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [
+          "water_warning",
+          "sensor_health"
+        ],
+        "evidence": {
+          "water_warning": "active",
+          "water_watch": "unknown",
+          "water_rise": "unknown",
+          "ph_reference": "unknown",
+          "turbidity_reference": "clear",
+          "temperature_reference": "clear",
+          "sensor_health": "active",
+          "connection": "clear"
+        },
+        "values": [
+          null,
+          10,
+          27,
+          120
+        ],
+        "rate": null
+      }
+    },
+    {
+      "name": "rising",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 140
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641598000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:58.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-2000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 141
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641596000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:56.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-4000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 142
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641594000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:54.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-6000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 143
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641592000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:52.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-8000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 144
+            },
+            "sensor_health": {}
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [
+          "water_rise"
+        ],
+        "evidence": {
+          "water_warning": "clear",
+          "water_watch": "clear",
+          "water_rise": "active",
+          "ph_reference": "clear",
+          "turbidity_reference": "clear",
+          "temperature_reference": "clear",
+          "sensor_health": "clear",
+          "connection": "clear"
+        },
+        "values": [
+          7,
+          10,
+          27,
+          60
+        ],
+        "rate": 30
+      }
+    },
+    {
+      "name": "calibration-gap",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 140
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641598000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:58.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-2000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 141
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641596000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:56.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-4000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 142
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641594000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:54.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-6000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 143
+            },
+            "sensor_health": {}
+          }
+        },
+        {
+          "id": 1792641592000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:52.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-8000",
+            "config_revision": 2,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 144
+            },
+            "sensor_health": {}
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [],
+        "evidence": {
+          "water_warning": "clear",
+          "water_watch": "clear",
+          "water_rise": "unknown",
+          "ph_reference": "clear",
+          "turbidity_reference": "clear",
+          "temperature_reference": "clear",
+          "sensor_health": "clear",
+          "connection": "clear"
+        },
+        "values": [
+          7,
+          10,
+          27,
+          60
+        ],
+        "rate": null
+      }
+    },
+    {
+      "name": "stale",
+      "records": [
+        {
+          "id": 1792641569000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T03:59:29.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-31000",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 2400,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 80
+            },
+            "sensor_health": {}
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": false,
+        "activeKinds": [
+          "connection"
+        ],
+        "evidence": {
+          "water_warning": "unknown",
+          "water_watch": "unknown",
+          "water_rise": "unknown",
+          "ph_reference": "unknown",
+          "turbidity_reference": "unknown",
+          "temperature_reference": "unknown",
+          "sensor_health": "unknown",
+          "connection": "active"
+        },
+        "values": [
+          7,
+          10,
+          27,
+          120
+        ],
+        "rate": null
+      }
+    },
+    {
+      "name": "cloudy",
+      "records": [
+        {
+          "id": 1792641600000,
+          "source": "esp32",
+          "deviceId": "one",
+          "timestamp": "2026-10-22T04:00:00.000Z",
+          "receivedAt": "2026-10-22T04:00:00.000Z",
+          "settings": {
+            "enabled": {
+              "ph": true,
+              "turbidity": true,
+              "temperature": true,
+              "water_level": true
+            },
+            "ph": [
+              {
+                "mv": 1500,
+                "value": 4
+              },
+              {
+                "mv": 2000,
+                "value": 7
+              }
+            ],
+            "turbidity": [
+              {
+                "mv": 1500,
+                "value": 100
+              },
+              {
+                "mv": 2500,
+                "value": 0
+              }
+            ],
+            "level": {
+              "reference": 200,
+              "minimum": 25,
+              "maximum": 450
+            },
+            "temperature_offset": 0,
+            "verified": true
+          },
+          "payload": {
+            "device_id": "one",
+            "sample_id": "sample-0",
+            "config_revision": 1,
+            "raw": {
+              "ph_mv": 2000,
+              "ph_adc": 2200,
+              "turbidity_mv": 1800,
+              "turbidity_adc": 2500,
+              "temperature_c": 27,
+              "distance_cm": 160
+            },
+            "sensor_health": {}
+          }
+        }
+      ],
+      "watch": {
+        "elevated": 70,
+        "warning": 100,
+        "rise_limit": 10
+      },
+      "expected": {
+        "fresh": true,
+        "activeKinds": [
+          "turbidity_reference"
+        ],
+        "evidence": {
+          "water_warning": "clear",
+          "water_watch": "clear",
+          "water_rise": "unknown",
+          "ph_reference": "clear",
+          "turbidity_reference": "active",
+          "temperature_reference": "clear",
+          "sensor_health": "clear",
+          "connection": "clear"
+        },
+        "values": [
+          7,
+          70,
+          27,
+          40
+        ],
+        "rate": null
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "name": "fault-cannot-recover",
+      "steps": [
+        {
+          "case": "high",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "water-fault",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "sensor_health",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "water-fault",
+          "watchRevision": 1,
+          "expectedEvents": []
+        },
+        {
+          "case": "water-fault",
+          "watchRevision": 1,
+          "expectedEvents": []
+        }
+      ],
+      "finalActive": [
+        "water_warning",
+        "sensor_health"
+      ]
+    },
+    {
+      "name": "positive-recovery",
+      "steps": [
+        {
+          "case": "high",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 1,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 1,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "recovered"
+            ]
+          ]
+        }
+      ],
+      "finalActive": []
+    },
+    {
+      "name": "policy-recheck",
+      "steps": [
+        {
+          "case": "high",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": [
+            [
+              "settings",
+              "settings_changed"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "rechecked"
+            ]
+          ]
+        }
+      ],
+      "finalActive": []
+    },
+    {
+      "name": "continued-high-recheck",
+      "steps": [
+        {
+          "case": "high",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "high",
+          "watchRevision": 2,
+          "expectedEvents": [
+            [
+              "settings",
+              "settings_changed"
+            ],
+            [
+              "water_warning",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": [
+            [
+              "water_warning",
+              "rechecked"
+            ]
+          ]
+        }
+      ],
+      "finalActive": []
+    },
+    {
+      "name": "missing-rise-window",
+      "steps": [
+        {
+          "case": "rising",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "water_rise",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 1,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 1,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 1,
+          "expectedEvents": []
+        }
+      ],
+      "finalActive": [
+        "water_rise"
+      ]
+    },
+    {
+      "name": "connection-recovery",
+      "steps": [
+        {
+          "case": "stale",
+          "watchRevision": 1,
+          "expectedEvents": [
+            [
+              "connection",
+              "active"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": [
+            [
+              "settings",
+              "settings_changed"
+            ]
+          ]
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": []
+        },
+        {
+          "case": "clear",
+          "watchRevision": 2,
+          "expectedEvents": [
+            [
+              "connection",
+              "recovered"
+            ]
+          ]
+        }
+      ],
+      "finalActive": []
+    }
+  ]
+}

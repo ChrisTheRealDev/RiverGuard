@@ -119,6 +119,17 @@ public final class PhoneValidation {
         return object;
     }
 
+    /** Drafts may contain unfinished/null numeric inputs, but not malformed form shapes. */
+    public static void draft(Object incoming){
+        if(incoming==null||incoming==JSONObject.NULL)return;
+        if(!(incoming instanceof JSONObject))throw new Problem(422,"Specify a calibration draft.");JSONObject value=(JSONObject)incoming;
+        requiredKeys(value,"revision","settings");integer(value,"revision",0,Integer.MAX_VALUE);JSONObject cfg=requireObject(value,"settings");requiredKeys(cfg,"enabled","ph","turbidity","level","temperature_offset","verified");JSONObject enabled=requireObject(cfg,"enabled");requiredKeys(enabled,FIELDS);for(String field:FIELDS)bool(enabled,field);bool(cfg,"verified");incomplete(cfg,"temperature_offset");
+        if(!cfg.isNull("level")){JSONObject level=requireObject(cfg,"level");requiredKeys(level,"reference","minimum","maximum");for(String key:new String[]{"reference","minimum","maximum"})incomplete(level,key);}
+        for(String field:new String[]{"ph","turbidity"})if(!cfg.isNull(field)){JSONArray points=cfg.optJSONArray(field);if(points==null||points.length()>5)throw new Problem(422,"Invalid calibration draft points.");for(int i=0;i<points.length();i++){JSONObject point=points.optJSONObject(i);if(point==null)throw new Problem(422,"Invalid calibration draft point.");requiredKeys(point,"mv","value");incomplete(point,"mv");incomplete(point,"value");}}
+    }
+    private static void requiredKeys(JSONObject value,String... allowed){keys(value,allowed);for(String key:allowed)if(!value.has(key))throw new Problem(422,"A saved draft field is missing.");}
+    private static void incomplete(JSONObject value,String key){if(!value.isNull(key))number(value,key,-1e12,1e12);}
+
     public static JSONObject defaults() {
         JSONObject enabled = new JSONObject();
         for (String field : FIELDS) put(enabled, field, false);

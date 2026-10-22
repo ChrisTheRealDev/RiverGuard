@@ -30,3 +30,11 @@ Use a trusted private network: sensor HTTP is not encrypted. Keep the phone on
 that Wi-Fi. User-started Android background monitoring is still subject to OS,
 Wi-Fi and battery behavior, and a force-stop ends collection. Do not treat this
 as a guaranteed always-on unattended logger. Real hardware checks remain pending.
+
+## Retry deadline regression
+
+The repaired network workers track whether a deadline is scheduled separately from
+its timestamp. Zero is a valid timestamp after millis rollover. Compile-time cases
+in `firmware/test/test_deadline/test_main.cpp` exercise the production helper around
+the signed boundary and rollover; both receivers use that same helper. The firmware
+build still needs physical long-running and network-interruption acceptance.

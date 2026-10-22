@@ -4,7 +4,7 @@ export interface Reading {
  values:Record<'ph'|'turbidity'|'temperature'|'water_level',number|null>;ph:number|null;turbidity:number|null;temperature:number|null;water_level:number|null;
  raw:Record<string,unknown>;health:Record<string,string>;sensor_health:Record<string,string>;settings:any;payload:any;calibrated:boolean;provisional:boolean;fresh:boolean;age_seconds:number|null;connection_age_seconds:number|null;clock_ahead:boolean;calibration_label:string;
 }
-export interface Signal {kind:string;severity:'Review'|'Watch'|'Warning';title:string;explanation:string;timestamp:string|null}
+export interface Signal {lastKnown?:boolean;kind:string;severity:'Review'|'Watch'|'Warning';title:string;explanation:string;timestamp:string|null}
 export interface Evaluation {latest:Reading|null;previous:Reading|null;deltas:Partial<Record<'ph'|'turbidity'|'temperature'|'water_level',number>>;signals:Signal[];rate:number|null;missing:string[];settings:{elevated:number;warning:number;rise_limit:number};tone:string;title:string;reason:string;action:string;flood:string;age:number|null}
 export interface Domain {
  deriveReading(record:any,now?:number):Reading;

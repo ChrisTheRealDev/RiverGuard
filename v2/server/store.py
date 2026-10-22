@@ -75,7 +75,7 @@ def station(value):
 
 
 def number(value, minimum, maximum, integer=False):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not minimum <= value <= maximum or (integer and int(value) != value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not minimum <= value <= maximum or not math.isfinite(value) or (integer and int(value) != value):
         raise Problem(422, 'A number is missing or outside its supported range.')
     return value
 
@@ -138,6 +138,31 @@ def calibration(value):
     return normalized
 
 
+def validate_draft(value):
+    """Allow unfinished numbers, but never malformed structures in restored forms."""
+    if value is None: return
+    keys(value, ('revision', 'settings'), ('revision', 'settings'))
+    number(value['revision'], 0, 2147483647, True)
+    settings = value['settings']
+    keys(settings, DEFAULTS, DEFAULTS)
+    keys(settings['enabled'], FIELDS, FIELDS)
+    for flag in settings['enabled'].values(): boolean(flag)
+    boolean(settings['verified'])
+    def incomplete(n):
+        if n is not None: number(n, -1e12, 1e12)
+    incomplete(settings['temperature_offset'])
+    if settings['level'] is not None:
+        keys(settings['level'], ('reference', 'minimum', 'maximum'), ('reference', 'minimum', 'maximum'))
+        for n in settings['level'].values(): incomplete(n)
+    for field in ('ph', 'turbidity'):
+        points = settings[field]
+        if points is not None:
+            if not isinstance(points, list) or len(points) > 5: raise Problem(422, 'Invalid calibration draft points.')
+            for point in points:
+                keys(point, ('mv', 'value'), ('mv', 'value'))
+                incomplete(point['mv']); incomplete(point['value'])
+
+
 def hardware(packet, now=None):
     keys(packet, ('device_id', 'mode', 'sample_id', 'timestamp', 'setup_protocol', 'config_revision', 'raw', 'sensor_health', 'calibrated', 'calibration_id', 'tds_ppm', 'ph', 'turbidity', 'temperature', 'temperature_c', 'water_level', 'water_level_cm', 'ph_unit', 'turbidity_unit', 'temperature_unit', 'water_level_unit'), ('device_id', 'sample_id', 'timestamp', 'setup_protocol', 'config_revision', 'raw', 'sensor_health'))
     station(packet['device_id'])
@@ -170,28 +195,8 @@ class Store:
         self.path = Path(path).resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
-            version = db.execute('PRAGMA user_version').fetchone()[0]
-            application = db.execute('PRAGMA application_id').fetchone()[0]
-            tables = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchall()
-            if (tables and application != 0x52475632) or application not in (0, 0x52475632):
-                raise RuntimeError('This is not a RiverGuard V2 database. Choose a separate V2 file; the existing database was not changed.')
-            if version not in (0, 1): raise RuntimeError('Unsupported V2 database version; preserve the data folder.')
-            db.executescript('''
-            PRAGMA journal_mode=WAL;
-            CREATE TABLE IF NOT EXISTS state(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS stations(device_id TEXT PRIMARY KEY,token_hash TEXT UNIQUE NOT NULL,last_received TEXT,last_measured TEXT,ack_revision INTEGER);
-            CREATE TABLE IF NOT EXISTS configurations(device_id TEXT,revision INTEGER,settings TEXT,created_at TEXT,PRIMARY KEY(device_id,revision),FOREIGN KEY(device_id) REFERENCES stations(device_id));
-            CREATE TABLE IF NOT EXISTS readings(id INTEGER PRIMARY KEY AUTOINCREMENT,source TEXT NOT NULL,device_id TEXT NOT NULL,timestamp TEXT NOT NULL,measured_ms INTEGER NOT NULL,received_at TEXT NOT NULL,payload TEXT NOT NULL,settings_json TEXT,sample_id TEXT,UNIQUE(source,device_id,sample_id));
-            CREATE INDEX IF NOT EXISTS station_measurement ON readings(source,device_id,measured_ms DESC,id DESC);
-            CREATE TABLE IF NOT EXISTS alert_events(id INTEGER PRIMARY KEY AUTOINCREMENT,device_id TEXT NOT NULL,event_json TEXT NOT NULL);
-            CREATE INDEX IF NOT EXISTS station_alert_events ON alert_events(device_id,id DESC);
-            CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY,hash TEXT UNIQUE NOT NULL,csrf TEXT NOT NULL,expires REAL NOT NULL);
-            CREATE TABLE IF NOT EXISTS bootstrap(hash TEXT PRIMARY KEY,expires REAL NOT NULL);
-            CREATE TABLE IF NOT EXISTS pairing(hash TEXT PRIMARY KEY,expires REAL NOT NULL);
-            CREATE TABLE IF NOT EXISTS attempts(address TEXT,attempted REAL);
-            PRAGMA user_version=1;
-            PRAGMA application_id=1380406834;
-            ''')
+            from .migrations import migrate
+            migrate(db, self.path)
 
     @contextmanager
     def connect(self):
@@ -232,12 +237,81 @@ class Store:
             db.execute('INSERT INTO state VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', (key, encoded))
         return {'saved': True}
 
+    def public_state(self, key, value=None, write=False):
+        """Only user preferences/drafts are reachable through the generic bridge."""
+        self.state_key(key)
+        if key.startswith('alerts:') and not write:
+            return self.get_state(key)
+        if key == 'v2-preferences':
+            if write:
+                keys(value, ('source', 'deviceId', 'scenario', 'running'), ('source', 'deviceId'))
+                self.scope(value['source'], value['deviceId'])
+                if 'running' in value: boolean(value['running'])
+                if 'scenario' in value: text(value['scenario'], 1, 80)
+        elif key.startswith('draft:esp32:'):
+            station(key[len('draft:esp32:'):])
+            if write: validate_draft(value)
+        else:
+            raise Problem(403, 'This state is private to the monitoring service.')
+        return self.set_state(key, value) if write else self.get_state(key)
+
+    @staticmethod
+    def validate_watch(settings):
+        keys(settings, ('elevated', 'warning', 'rise_limit'), ('elevated', 'warning', 'rise_limit'))
+        number(settings['elevated'], 0, 1000); number(settings['warning'], 0, 1000)
+        number(settings['rise_limit'], .000001, 10000)
+        if settings['elevated'] >= settings['warning']: raise Problem(422, 'Warning height must exceed watch height.')
+        return settings
+
+    def _watch(self, db, source, device, calibration_settings=None):
+        row = db.execute('SELECT * FROM watch WHERE source=? AND device_id=?', (source, device)).fetchone()
+        settings = json.loads(row['settings']) if row else {'elevated': 70, 'warning': 100, 'rise_limit': 10}
+        valid = True
+        try: self.validate_watch(settings)
+        except Problem: valid = False
+        if source == 'esp32':
+            cfg = calibration_settings if calibration_settings is not None else self._settings(db, device)['settings']
+            level = cfg.get('level')
+            valid = valid and bool(level) and settings['warning'] <= level['reference'] - level['minimum']
+        review = bool(row['needs_review']) if row else False
+        return {'revision': row['revision'] if row else 0, 'settings': settings, 'valid': bool(valid and not review), 'needsReview': review}
+
+    def get_watch(self, source, device):
+        self.scope(source, device)
+        with self.connect() as db: return self._watch(db, source, device)
+
+    def alert_state(self, source, device):
+        self.scope(source, device)
+        if source == 'simulation': return {'conditions': []}
+        with self.connect() as db:
+            row = db.execute('SELECT ledger FROM alert_progress WHERE device_id=?', (device,)).fetchone()
+        try:
+            conditions = json.loads(row[0]).get('conditions', {}) if row else {}
+            return {'conditions': [dict(kind=k, level=v['level'], title=v.get('title', 'Last known '+k.replace('_',' ')), detail=v.get('detail','Check fresh readings before assuming this condition has cleared.'), measuredAt=v.get('measuredAt'), lastKnown=v.get('lastKnown',True)) for k,v in conditions.items() if v['active']]}
+        except (ValueError, TypeError, AttributeError, KeyError):
+            raise Problem(503, 'Monitoring state needs rechecking. Saved evidence is preserved.')
+
+    def save_watch(self, source, device, expected, settings):
+        self.scope(source, device); number(expected, 0, 2147483646, True); self.validate_watch(settings)
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            old = self._watch(db, source, device)
+            if expected != old['revision']: raise Problem(409, 'Watch settings changed elsewhere. Reload them before saving; your edits are preserved.')
+            if source == 'esp32':
+                if not db.execute('SELECT 1 FROM stations WHERE device_id=?', (device,)).fetchone(): raise Problem(404, 'Register this station first.')
+                level = self._settings(db, device)['settings']['level']
+                if not level or settings['warning'] > level['reference']-level['minimum']:
+                    raise Problem(422, 'Calibrate water distance first and choose watch levels within its measurable height.')
+            db.execute('INSERT INTO watch VALUES (?,?,?,?,0) ON CONFLICT(source,device_id) DO UPDATE SET revision=excluded.revision,settings=excluded.settings,needs_review=0', (source, device, expected+1, encode(settings)))
+            return self._watch(db, source, device)
+
     def register(self, device, rotate=False):
         station(device); boolean(rotate)
         token = secrets.token_hex(32)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             exists = db.execute('SELECT 1 FROM stations WHERE device_id=?', (device,)).fetchone()
+            if device == 'demo-station' and not exists: raise Problem(422, 'This station ID is reserved for Demo. Choose a different ID.')
             if exists and not rotate: raise Problem(409, 'Station already registered. Replace its credential only if you can update the private firmware configuration.')
             db.execute('INSERT INTO stations(device_id,token_hash) VALUES (?,?) ON CONFLICT(device_id) DO UPDATE SET token_hash=excluded.token_hash', (device, digest(token)))
         return {'deviceId': device, 'token': token}
@@ -269,6 +343,11 @@ class Store:
             old = self._settings(db, device)
             if old['revision'] != expected: raise Problem(409, 'Settings changed. Reload the saved configuration before saving again.')
             if (old['settings'] | {'verified': False}) != (normalized | {'verified': False}): normalized['verified'] = False
+            if normalized['verified']:
+                watch = self._watch(db, 'esp32', device, normalized)
+                ack = db.execute('SELECT ack_revision FROM stations WHERE device_id=?', (device,)).fetchone()[0]
+                if not watch['valid'] or ack != expected:
+                    raise Problem(422, 'Save compatible watch levels and wait for the station to acknowledge calibration before verification.')
             db.execute('INSERT INTO configurations VALUES (?,?,?,?)', (device, expected+1, encode(normalized), iso()))
         return {'revision': expected+1, 'settings': normalized}
 
@@ -356,17 +435,27 @@ class Store:
         # A ceiling cursor makes one immutable snapshot without retaining a
         # database lock while a slow browser downloads.
         with self.connect() as db:
+            db.execute('BEGIN')
             ceiling = db.execute('SELECT COALESCE(MAX(id),0) FROM readings WHERE source=? AND device_id=?', (source, device)).fetchone()[0]
+            policy = self._watch(db, source, device)
+            event_ceiling = db.execute('SELECT COALESCE(MAX(id),0) FROM alert_events WHERE device_id=?', (device,)).fetchone()[0]
         def rows():
-            yield ['id', 'source', 'device_id', 'timestamp', 'received_at', 'sample_id', 'config_revision', 'ph', 'turbidity', 'temperature', 'water_level', 'raw_json', 'settings_json', 'payload_json']
+            yield ['id', 'source', 'device_id', 'timestamp', 'received_at', 'sample_id', 'config_revision', 'ph', 'turbidity', 'temperature', 'water_level', 'raw_json', 'settings_json', 'payload_json', 'export_watch_settings_json', 'alert_events_json']
             previous = 0
             while True:
                 with self.connect() as db:
                     batch = db.execute('SELECT * FROM readings WHERE source=? AND device_id=? AND id>? AND id<=? ORDER BY id LIMIT 500', (source, device, previous, ceiling)).fetchall()
+                    event_map = {}
+                    if source == 'esp32':
+                        for row in batch:
+                            found = db.execute("SELECT event_json FROM alert_events WHERE device_id=? AND id<=? AND json_extract(event_json,'$.sample')=? ORDER BY id", (device, event_ceiling, row['sample_id'])).fetchall()
+                            event_map[row['id']] = [json.loads(e[0]) for e in found]
                 if not batch: return
                 for row in batch:
                     packet = json.loads(row['payload']); demo = row['source'] == 'simulation'
-                    yield [row['id'], row['source'], row['device_id'], row['timestamp'], row['received_at'], row['sample_id'], packet.get('config_revision'), *[packet.get(field) if demo else None for field in FIELDS], encode(packet.get('raw', {})), row['settings_json'], row['payload']]
+                    from .signals import derive
+                    values = packet if demo else derive(self.row(row), row['measured_ms'])['values']
+                    yield [row['id'], row['source'], row['device_id'], row['timestamp'], row['received_at'], row['sample_id'], packet.get('config_revision'), *[values.get(field) for field in FIELDS], encode(packet.get('raw', {})), row['settings_json'], row['payload'], encode(policy), encode(event_map.get(row['id'], []))]
                 previous = batch[-1]['id']
         def generate():
             for row in rows():
@@ -378,18 +467,49 @@ class Store:
     def evaluate_alerts(self, device, now=None):
         from .signals import evaluate, apply
         now = time.time()*1000 if now is None else now
-        rows = self.readings('esp32', device, 120)['items']
-        if not rows: return []
-        watch = self.get_state('watch:'+device)['value']
-        evaluation = evaluate(rows, watch, now)
-        key = 'alert-status:'+device
+        station(device)
+        events = []
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            previous = db.execute('SELECT value FROM state WHERE key=?', (key,)).fetchone()
-            state, events = apply(json.loads(previous[0]) if previous else None, evaluation, now)
-            encoded = encode(state)
-            if not previous or previous[0] != encoded:
-                db.execute('INSERT INTO state VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', (key, encoded))
+            db.execute('INSERT OR IGNORE INTO alert_progress(device_id) VALUES (?)', (device,))
+            progress = db.execute('SELECT * FROM alert_progress WHERE device_id=?', (device,)).fetchone()
+            try:
+                state = json.loads(progress['ledger'])
+                if not isinstance(state, dict) or not isinstance(state.get('conditions', {}), dict): raise ValueError('ledger')
+                if any(not isinstance(v, dict) or not isinstance(v.get('active'), bool) or type(v.get('clearCount', 0)) is not int or not 0 <= v.get('clearCount', 0) <= 3 or type(v.get('level')) is not int or not 0 <= v['level'] <= 3 for v in state.get('conditions', {}).values()): raise ValueError('conditions')
+            except (ValueError, TypeError):
+                db.execute('INSERT INTO quarantine(key,value,created) VALUES (?,?,?)', ('alert-progress:'+device, progress['ledger'], time.time()))
+                state = {'conditions': {'monitoring': {'active': True, 'level': 2, 'clearCount': 0, 'lastKnown': True, 'title': 'Monitoring state needs rechecking', 'detail': 'Earlier warning state was unreadable. Three complete fresh readings are needed to recheck monitoring.', 'measuredAt': None}}}
+                events.append({'kind':'monitoring', 'phase':'active', 'level':1, 'title':'Monitoring state needs rechecking', 'detail':'Unreadable internal state was preserved for inspection. Earlier warnings cannot be assumed recovered.', 'timestamp':iso(now), 'provenance':'unavailable'})
+            last_id, current_ms, current_id = progress['last_id'], progress['current_ms'], progress['current_id']
+            watch = self._watch(db, 'esp32', device)
+            pending = db.execute("SELECT * FROM readings WHERE source='esp32' AND device_id=? AND id>? ORDER BY id LIMIT 500", (device, last_id)).fetchall()
+            for row in pending:
+                last_id = row['id']
+                if (row['measured_ms'], row['id']) <= (current_ms, current_id): continue
+                context = db.execute("SELECT * FROM readings WHERE source='esp32' AND device_id=? AND id<=? AND (measured_ms<? OR (measured_ms=? AND id<=?)) ORDER BY measured_ms DESC,id DESC LIMIT 5", (device, row['id'], row['measured_ms'], row['measured_ms'], row['id'])).fetchall()
+                # Evaluate freshness as received, not after a busy worker catches up.
+                evaluation = evaluate([self.row(r) for r in context], watch['settings'], timestamp(row['received_at'], now+10**15))
+                evaluation.update(watchRevision=watch['revision'], watchSettings=watch['settings'])
+                if not watch['valid']:
+                    for kind in ('water_watch', 'water_warning', 'water_rise'):
+                        if evaluation['evidence'][kind] == 'clear': evaluation['evidence'][kind] = 'unknown'
+                state, additions = apply(state, evaluation, now)
+                events.extend(additions)
+                current_ms, current_id = row['measured_ms'], row['id']
+            # Clock-driven connectivity is separate from per-packet processing.
+            if current_id and (not pending or len(pending) < 500):
+                latest = db.execute("SELECT * FROM readings WHERE source='esp32' AND device_id=? ORDER BY measured_ms DESC,id DESC LIMIT 5", (device,)).fetchall()
+                evaluation = evaluate([self.row(r) for r in latest], watch['settings'], now)
+                evaluation.update(watchRevision=watch['revision'], watchSettings=watch['settings'])
+                if not watch['valid']:
+                    for kind in ('water_watch', 'water_warning', 'water_rise'):
+                        if evaluation['evidence'][kind] == 'clear': evaluation['evidence'][kind] = 'unknown'
+                state, additions = apply(state, evaluation, now)
+                events.extend(additions)
+            db.execute('UPDATE alert_progress SET last_id=?,current_ms=?,current_id=?,ledger=? WHERE device_id=?', (last_id, current_ms, current_id, encode(state), device))
+            # Retain a read-only internal diagnostic key for migration/debugging.
+            db.execute('INSERT INTO state VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', ('alert-status:'+device, encode(state)))
             for event in events:
                 event['deviceId'] = device
                 db.execute('INSERT INTO alert_events(device_id,event_json) VALUES (?,?)', (device, encode(event)))

@@ -85,7 +85,7 @@ The consolidated audit and component reviews are under `docs/audit/`. Raw review
 
 ## Standalone Android app
 
-Download the standalone APK from [GitHub Releases](https://github.com/ChrisTheRealDev/RiverGuard/releases).
+Download [V1 standalone Android, 2.0.0-preview.1](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/android-v2.0.0-preview.1/RiverGuard-Android-Standalone-2.0.0-preview.1.apk) (4.72 MB), or the separate [V2 observatory preview 1](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.1/RiverGuard-V2-Preview.apk) (4.74 MB). See [Android downloads](docs/ANDROID-DOWNLOADS.md) for exact versions, checksums and stalled-download help. These are the existing previews; the V2 audit-repair build is not published yet.
 It bundles the dashboard and uses SQLite on the phone: no laptop, Python, AI
 model or internet server is needed. Demo readings are clearly labelled synthetic.
 Real sensors connect directly to the phone on the same private Wi-Fi using the

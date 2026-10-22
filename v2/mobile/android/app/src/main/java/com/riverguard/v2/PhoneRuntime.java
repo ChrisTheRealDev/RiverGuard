@@ -29,7 +29,9 @@ final class PhoneRuntime {
     private volatile boolean enabled;
     private volatile String error;
     private volatile MonitoringService service;
-    private PhoneRuntime(Context context){this.context=context;store=new PhoneStore(context);receiver=new PhoneReceiver(store,8000);store.receiverEnabled(false);MonitoringService.createChannels(context);}
+    private long startedAt;
+    private final ScheduledExecutorService demo=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"riverguard-v2-demo");t.setDaemon(true);return t;});
+    private PhoneRuntime(Context context){this.context=context;store=new PhoneStore(context);receiver=new PhoneReceiver(store,8000);store.receiverEnabled(false);MonitoringService.createChannels(context);demo.scheduleWithFixedDelay(()->{try{store.tickDemo(System.currentTimeMillis());}catch(Exception e){try{store.demoFailed();}catch(Exception ignored){}}},0,2,TimeUnit.SECONDS);}
     private boolean notificationPermissionAllowed(){return (Build.VERSION.SDK_INT<33||ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED)&&NotificationManagerCompat.from(context).areNotificationsEnabled();}
     private boolean channelAllowed(String id){if(Build.VERSION.SDK_INT<26)return true;NotificationChannel channel=context.getSystemService(NotificationManager.class).getNotificationChannel(id);return channel!=null&&channel.getImportance()!=NotificationManager.IMPORTANCE_NONE;}
     boolean notificationsAllowed(){return notificationPermissionAllowed()&&channelAllowed(MonitoringService.ALERTS)&&channelAllowed(MonitoringService.REVIEWS);}
@@ -42,21 +44,25 @@ final class PhoneRuntime {
     synchronized void start(MonitoringService owner) {
         service=owner;
         if(monitor!=null)return;
-        enabled=true;store.receiverEnabled(true);error=null;
+        enabled=true;store.receiverEnabled(true);error=null;startedAt=System.currentTimeMillis();
         monitor=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"riverguard-v2-monitor");t.setDaemon(true);return t;});
         monitor.scheduleWithFixedDelay(()->tick(owner),0,3,TimeUnit.SECONDS);
     }
     private void tick(MonitoringService owner){
         try {
-            synchronized(this){if(!enabled||service!=owner)return;if(!receiver.isRunning())receiver.start();error=null;}
-            owner.renewLocks();
-            JSONArray stations=store.stations();
+            synchronized(this){if(!enabled||service!=owner)return;if(!receiver.isRunning())receiver.start();}
+            owner.renewLocks();JSONArray stations=store.stations();boolean failed=false;
             for(int i=0;i<stations.length();i++){
-                String device=stations.getJSONObject(i).getString("deviceId");JSONArray events=store.evaluateAlerts(device,System.currentTimeMillis());
-                JSONObject highest=null;
-                for(int j=0;j<events.length();j++){JSONObject event=events.getJSONObject(j);if(event.optString("phase").equals("active")&&canNotify(event.optInt("level"))&&(highest==null||event.optInt("level")>highest.optInt("level")))highest=event;}
-                synchronized(this){if(!enabled||service!=owner)return;if(highest!=null)owner.notifyAlert(device,highest);}
+                try {
+                    String device=stations.getJSONObject(i).getString("deviceId");long now=System.currentTimeMillis();store.evaluateAlerts(device,now,startedAt);
+                    JSONArray pending=store.pendingNotifications(device,now);
+                    for(int j=0;j<pending.length();j++){
+                        JSONObject event=pending.getJSONObject(j);
+                        synchronized(this){if(!enabled||service!=owner)return;if(canNotify(event.optInt("level"))&&owner.notifyAlert(device,event))store.notificationDelivered(event.optLong("eventId"));}
+                    }
+                }catch(Exception stationFailure){failed=true;}
             }
+            synchronized(this){if(!enabled||service!=owner)return;if(failed||store.hasMonitoringIssue()){error="A station could not be evaluated. Other stations continue monitoring; reopen its setup without clearing data.";owner.showRuntimeError();}else{boolean recovered=error!=null;error=null;if(recovered)owner.showRuntimeHealthy();}}
         }catch(Exception failure){synchronized(this){if(!enabled||service!=owner)return;error="Monitoring could not read or store sensor data. Check port 8000, reopen RiverGuard and retry; do not clear app data.";owner.showRuntimeError();}}
     }
     synchronized void stop(MonitoringService owner){if(owner!=null&&service!=null&&service!=owner)return;enabled=false;store.receiverEnabled(false);receiver.stop();ScheduledExecutorService old=monitor;monitor=null;service=null;if(old!=null)old.shutdownNow();}

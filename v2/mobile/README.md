@@ -35,8 +35,10 @@ between five seconds ahead and 30 seconds old. Faults, blind-zone distances and
 uncalibrated signals stay unavailable. A known high-water warning retains priority
 when another probe is missing. Rising-water checks require five same-revision
 samples spanning eight seconds. `alerts:<deviceId>` returns the most recent 100
-saved transitions; active conditions notify once, with recovery after three new
-fresh samples no longer show that condition. Old/future evidence does not generate
+saved transitions; active conditions are queued durably for notification delivery, with recovery
+only after three distinct usable samples clear the same condition. Missing values
+cannot clear a warning. Changes to calibration or watch settings produce a
+separate recheck transition rather than claiming environmental improvement. Old/future evidence does not generate
 new current-condition warnings. No rule certifies water safety.
 
 ## Operating limits
@@ -82,3 +84,22 @@ persistent ledger behavior. Compilation/lint do not establish physical operation
 Actual APK installation, native SQLite persistence, document exports, lock-screen
 Wi-Fi reception, notification denial/channel blocks, Stop/force-stop/reboot,
 battery impact and real calibrated hardware remain physical-device acceptance.
+
+## Repair preview upgrade
+
+The repair preview uses native database schema 2 and creates a private checkpointed
+backup before migrating schema 1. Keep app data when updating. Watch settings now
+have separate source/station revisions; geometry must support the chosen thresholds
+before commissioning can finish. Existing events retain their original JSON and
+are labelled when historical policy provenance is unavailable.
+
+The application owns Demo generation, so its controls are consistent across views.
+A new real station has a 60-second first-reading grace period while monitoring is
+running. Notification permission can be granted later: still-active relevant
+conditions remain pending until delivery is possible. A delivered notification is
+not a claim that the user has read it.
+
+See [native repair evidence](../NATIVE-REPAIR-EVIDENCE.md) for executed checks and
+physical-device acceptance still required. Android instrumentation tests use isolated
+private test databases and can be run with `:app:connectedDebugAndroidTest` on a
+compatible emulator or test device.

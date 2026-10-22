@@ -87,6 +87,8 @@ def test_settings_cas_snapshot_and_verification_reset(store):
     store.register('river-01')
     cfg = settings(); first = store.save_settings('river-01', 0, cfg)
     assert first['revision'] == 1
+    store.save_watch('esp32', 'river-01', 0, {'elevated': 10, 'warning': 20, 'rise_limit': 10})
+    store.ingest('river-01', packet(sample='ack-1', revision=1))
     cfg['verified'] = True
     assert store.save_settings('river-01', 1, cfg)['settings']['verified'] is True
     store.ingest('river-01', packet(revision=2))

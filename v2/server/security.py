@@ -12,6 +12,8 @@ SESSION_SECONDS = 30*86400
 class Access:
     def __init__(self, store):
         self.store = store
+        with store.connect() as db:
+            self.cookie_name = COOKIE + '_' + db.execute("SELECT value FROM metadata WHERE key='installation_id'").fetchone()[0]
 
     @staticmethod
     def origin(request):
@@ -20,10 +22,13 @@ class Access:
             raise Problem(403, 'Open RiverGuard directly on this device before changing anything.')
 
     def session(self, request):
-        token = request.cookies.get(COOKIE, '')
+        token = request.cookies.get(self.cookie_name, '') or request.cookies.get(COOKIE, '')
         if not token: return None
         with self.store.connect() as db:
             row = db.execute('SELECT id,csrf,expires FROM sessions WHERE hash=? AND expires>?', (digest(token), time.time())).fetchone()
+            if row:
+                label = request.headers.get('user-agent', 'Browser')[:160]
+                db.execute('INSERT INTO session_details VALUES (?,?,?) ON CONFLICT(session_id) DO UPDATE SET last_seen=excluded.last_seen', (row['id'], label, time.time()))
         return dict(row) if row else None
 
     def require(self, request):
@@ -42,9 +47,13 @@ class Access:
         db.execute('INSERT INTO sessions VALUES (?,?,?,?)', (session['id'], digest(token), session['csrf'], session['expires']))
         return token, session
 
-    @staticmethod
-    def cookie(response, token):
-        response.set_cookie(COOKIE, token, max_age=SESSION_SECONDS, httponly=True, samesite='strict', path='/')
+    def cookie(self, response, token):
+        response.set_cookie(self.cookie_name, token, max_age=SESSION_SECONDS, httponly=True, samesite='strict', path='/')
+
+    def list_sessions(self, current):
+        with self.store.connect() as db:
+            rows = db.execute('SELECT s.id,s.expires,d.label,d.last_seen FROM sessions s LEFT JOIN session_details d ON d.session_id=s.id WHERE s.expires>? ORDER BY d.last_seen DESC', (time.time(),)).fetchall()
+        return {'items': [{'id': row['id'], 'label': row['label'] or 'Previously paired browser', 'lastSeen': row['last_seen'], 'expires': row['expires'], 'current': row['id'] == current} for row in rows]}
 
     def bootstrap_token(self):
         token = secrets.token_urlsafe(32)
