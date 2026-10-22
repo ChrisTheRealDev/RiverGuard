@@ -1,36 +1,33 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>RiverGuard</title>
-<style>
-:root{--bg:#f2f6f9;--card:#fff;--ink:#12212b;--mute:#5b6b76;--acc:#1b8bb5;--line:#dbe4ea;--err:#b3261e}
-@media(prefers-color-scheme:dark){:root{--bg:#0d1a22;--card:#14252f;--ink:#e6eef3;--mute:#93a6b2;--line:#25404f}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;padding:16px}
-.c{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:420px;width:100%}
-img{width:84px;height:84px;border-radius:50%;display:block;margin:0 auto 8px}h1{font-size:1.3rem;text-align:center;margin:0 0 4px}
-p{color:var(--mute);font-size:.9rem}label{font-size:.85rem;color:var(--mute)}
-input,button{font:inherit;width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);margin-top:6px}
-input{background:var(--bg);color:var(--ink)}button{background:var(--acc);color:#fff;border-color:var(--acc);margin-top:12px}
-#msg{color:var(--err);font-size:.85rem;min-height:1.2em}
-</style></head><body><div class="c">
-<img src="otter.png" alt=""><h1>RiverGuard</h1>
-<p>Connect to the RiverGuard app running on your laptop. Both devices must be on the same private Wi‑Fi, and <b>Start RiverGuard</b> must be running.</p>
-<label for="a">Laptop address</label>
-<input id="a" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="192.168.1.20:8501">
-<button id="go">Connect</button><p id="msg"></p>
-<p>First time? On the laptop open <i>Station settings → Create pairing code</i>, then enter the 8‑digit code on the next screen. Android back button (from the app) returns here.</p>
-</div>
-<script>
-const K="rg_server",$=s=>document.querySelector(s);
-const norm=v=>{v=v.trim().replace(/\/+$/,"");if(!v)return"";if(!/^https?:\/\//i.test(v))v="http://"+v;try{const u=new URL(v);if(!u.port&&u.protocol==="http:")u.port="8501";return u.origin}catch{return""}};
-const get=()=>{try{return localStorage.getItem(K)||""}catch{return""}};
-async function reachable(o){const c=new AbortController(),t=setTimeout(()=>c.abort(),5000);try{await fetch(o+"/",{mode:"no-cors",signal:c.signal,cache:"no-store"});return true}catch{return false}finally{clearTimeout(t)}}
-async function go(v,auto){const o=norm(v);if(!o){$("#msg").textContent="Enter an address like 192.168.1.20:8501";return}
- $("#msg").textContent="Connecting…";$("#go").disabled=true;
- if(await reachable(o)){try{localStorage.setItem(K,o)}catch{}location.replace(o+"/")}
- else{$("#msg").textContent="Cannot reach "+o+". Check Wi‑Fi, that Start RiverGuard is running, and that Windows Firewall allows port 8501 on private networks.";$("#go").disabled=false}}
-$("#go").onclick=()=>go($("#a").value);
-$("#a").addEventListener("keydown",e=>e.key==="Enter"&&go($("#a").value));
-const saved=get();$("#a").value=saved.replace(/^https?:\/\//,"");
-if(saved&&!/change=1/.test(location.search))go(saved,true);
-</script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>RiverGuard</title>
+  <style>
+    :root{color-scheme:dark;--bg:#10272e;--card:#18363e;--ink:#e3f1ef;--mute:#afc6ca;--line:#799ca43d;--accent:#b9a9f4}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#21434b,var(--bg) 70%);color:var(--ink);font:16px/1.5 system-ui,sans-serif;min-height:100dvh;padding:24px 20px;display:flex;align-items:center;justify-content:center}
+    main{width:100%;max-width:420px}header{display:flex;align-items:center;gap:13px;margin-bottom:26px}header img{width:68px;height:68px;object-fit:contain}h1{font-size:26px;letter-spacing:-.03em;margin:0}header span{font-size:13px;color:var(--mute)}section{padding:25px 22px;background:linear-gradient(130deg,#25474eaa,var(--card));border:1px solid var(--line);border-radius:22px;box-shadow:0 14px 36px #0002}h2{font-size:23px;line-height:1.25;margin:0 0 13px;letter-spacing:-.02em}p{font-size:14px;color:var(--mute);margin:0 0 22px}label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}input,button{font:inherit;width:100%;border-radius:13px;min-height:52px}input{padding:13px;background:#102830;color:var(--ink);border:1px solid var(--line)}input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}input::placeholder{color:#8cabb2}button{margin-top:15px;border:0;background:var(--accent);color:#182733;font-weight:650;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.hint{font-size:12px;margin:10px 0 0}.steps{margin:23px 0 0;border-top:1px solid var(--line);padding-top:19px}.steps strong{display:block;font-size:13px;margin-bottom:8px}.steps p{font-size:13px;margin:0}#message{color:#f4c3b8;font-size:13px;line-height:1.6;margin:14px 0 0;overflow-wrap:anywhere}#message:empty{display:none}footer{font-size:12px;color:var(--mute);text-align:center;margin-top:21px}b{color:var(--ink)}@media(prefers-reduced-motion:no-preference){button{transition:opacity .15s,transform .15s}button:active{transform:translateY(1px)}}@media(max-height:600px){body{align-items:flex-start}header{margin-bottom:18px}}
+  </style>
+</head>
+<body>
+  <main>
+    <header><img src="otter.png" alt=""><div><h1>RiverGuard</h1><span>Your river, a little closer.</span></div></header>
+    <section aria-labelledby="connect-heading">
+      <h2 id="connect-heading">Connect to your laptop.</h2>
+      <p>Keep <b>Start RiverGuard</b> running and connect your phone to the same private Wi-Fi.</p>
+      <form id="connection-form">
+        <label for="address">Laptop address</label>
+        <input id="address" type="text" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="192.168.1.20:8501" aria-describedby="address-hint message" required>
+        <p class="hint" id="address-hint">Find this address in the laptop’s Station settings.</p>
+        <button type="submit" id="connect">Connect to RiverGuard <span aria-hidden="true">→</span></button>
+        <p id="message" role="status" aria-live="polite"></p>
+      </form>
+      <div class="steps"><strong>First time connecting?</strong><p>On the laptop, open <b>Station settings → Create pairing code</b>. Enter the eight-digit code on the next screen.</p></div>
+    </section>
+    <footer>AI runs on your laptop · Private Wi-Fi required<br>Use Android Back to change the laptop address.</footer>
+  </main>
+  <script src="connection.js"></script>
+</body>
+</html>

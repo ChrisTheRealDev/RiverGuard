@@ -85,9 +85,17 @@ The consolidated audit and component reviews are under `docs/audit/`. Raw review
 
 ## Android companion
 
+Download the installable APK from [GitHub Releases](https://github.com/ChrisTheRealDev/RiverGuard/releases).
+The APK is a debug-signed Android preview. It connects to the laptop app on the
+same private Wi-Fi; keep **Start RiverGuard** running, enter its laptop address,
+then pair with the eight-digit code from Station settings. Android 6+ with an
+up-to-date System WebView is required. No Python or Node installation is needed
+on the phone.
+
 `mobile/` contains the Capacitor Android companion imported from
 [alamien060512-alt/RiverGuard-Android](https://github.com/alamien060512-alt/RiverGuard-Android),
-revision `a42f293`. Its MIT license is retained in `mobile/LICENSE`.
+revision `a42f293`, with the missing native app module restored and connection
+recovery added for APK builds. Its MIT license is retained in `mobile/LICENSE`.
 It connects to the running laptop app over the same private Wi-Fi; Python and
 Ollama run on the laptop. See `mobile/README.md` for build requirements and limits.
 
