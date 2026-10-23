@@ -1,3 +1,31 @@
+# V2 observatory preview 3 — 23 October 2026
+
+`v2-observatory-preview.3` includes the latest warning and readability refinements
+on top of Preview 2. The Android APK keeps the existing V2 signing certificate
+and uses version code 3 (`2.1.0-v2.preview.3`). Install over the previous V2;
+do not uninstall and lose your saved phone data.
+
+- Clear Watch/Warning labels with icons and stronger amber/red card borders.
+- Removed decorative artwork from warning cards; next-check emphasis follows
+  the warning severity, and severe signals appear first in the summary.
+- Larger supporting text, readable timestamps, clearer mobile navigation and
+  a separate controls row at 320px.
+- Preserved lavender/blue normal-condition panels and distinct chart colours.
+
+Browser checks covered normal, watch and warning states at 1366x650, 1280x720,
+1024x768, 390x844 and 320x568 with no horizontal overflow. Sampled warning text
+contrast was at least 6.05:1. Chart controls, keyboard focus, Rill dismissal and
+last-known warning labels were checked. This used headless Chrome with the real
+frontend/backend and an isolated database, not a physical Android phone.
+
+The frontend build and 31 tests pass. Real-phone upgrade, background monitoring
+and physical sensor commissioning remain pending. Previous releases are kept.
+The laptop ZIP includes compiled frontend assets: extract everything, install
+Python 3.14 on PATH, run `v2/Setup RiverGuard V2.cmd` once, then
+`v2/Start RiverGuard V2.cmd`. Initial setup needs internet; Node.js is not needed.
+
+## Previous preview notes
+
 # V2 repair preview — 22 October 2026
 
 V2 observatory preview 2 (`v2-observatory-preview.2`), prepared for friend testing

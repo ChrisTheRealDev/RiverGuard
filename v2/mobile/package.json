@@ -1,6 +1,6 @@
 {
   "name": "riverguard-v2-android",
-  "version": "2.1.0-v2.preview.2",
+  "version": "2.1.0-v2.preview.3",
   "private": true,
   "scripts": {
     "sync": "cap sync android",

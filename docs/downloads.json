@@ -32,6 +32,14 @@
       "filename": "RiverGuard-V2-Preview-2.apk",
       "size": 4757369,
       "sha256": "e21b36913c54e94e80956019faafbff0e68b3c5281b8d4aad62a5046cf36d5b9"
+    },
+    {
+      "id": "v2-preview-3",
+      "label": "V2 observatory preview 3 - warning and readability refinements",
+      "tag": "v2-observatory-preview.3",
+      "filename": "RiverGuard-V2-Preview-3.apk",
+      "size": 4757957,
+      "sha256": "194844798dd1dadca83715a5fca9626842596bb5665d1b54c4f8a65e13f79482"
     }
   ]
 }

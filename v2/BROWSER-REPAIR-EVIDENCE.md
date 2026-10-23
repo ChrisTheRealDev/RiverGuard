@@ -78,3 +78,38 @@ labels, lines and legends have matching computed colours; lavender/blue status
 panels are distinct, with green/amber/red retained for status. Saved screenshots
 are in `D:\RiverGuard\output\v2-run\v2-colour-desktop.png` and
 `v2-colour-mobile.png`. The user's normal browser viewport was restored.
+
+
+## 23 October 2026: colour and warning readability follow-up
+
+The browser-control and Windows-control tool kernels both failed to initialise
+(path-not-found). Used installed Chrome through Playwright headless with the real
+built frontend and backend, a new isolated database and test-only bootstrap
+session. The user's database and Demo scenario were not changed. This is browser
+rendering evidence, not a physical-phone acceptance claim.
+
+Inspected normal, changed-quality/watch and high-water warning screenshots at
+1366x650, 1280x720, 1024x768, 390x844 and 320x568. All 15 renders have no horizontal
+page overflow. Checked all four chart selectors, Rill opening/Escape dismissal,
+visible 2px keyboard focus and reduced-motion rendering. Advancing the browser
+clock and reloading retained explicitly labelled last-known warnings.
+
+Found and repaired subtle warning borders, category artwork competing with
+warning colours, small supporting copy and a fragmented 320px station name.
+Watch/Warning labels now include an icon; warning artwork is hidden. Warning
+signals sort before lower-priority signals in the three-item summary without
+mutating evaluation data. The next-check panel inherits the warning emphasis.
+Supporting warning copy is 14px, timestamps 12px, and narrow navigation labels
+11px. The 320px header gives source controls their own row.
+
+Sampled actual rendered backgrounds at three horizontal positions per warning
+text element with foreground text hidden. Minimum sampled contrast was 6.05:1
+across category labels, severity labels, headings, body copy, timestamps and next
+check instructions. This is a targeted contrast check, not an all-page WCAG
+certification.
+
+Evidence: local output/colour-check screenshots, results.json (15 renders),
+contrast.json and keyboard.json. Do not publish the test database.
+Frontend build and all 31 tests pass, including warning-summary priority and
+non-colour warning labelling. Updated compiled assets are served locally on 8510;
+this follow-up does not replace the already published Preview 2 APK/ZIP.

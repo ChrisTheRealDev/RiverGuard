@@ -7,8 +7,9 @@ automatically generated **Source code** ZIP to install the app.
 
 | App | Download | Size | Release |
 | --- | --- | --- | --- |
+| V2 observatory, preview 3 - latest warning and readability fixes | [RiverGuard-V2-Preview-3.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.3/RiverGuard-V2-Preview-3.apk) | 4,757,957 bytes | [Preview 3 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.3) |
 | V1 standalone, preserved older interface | [RiverGuard-Android-Standalone-2.0.0-preview.1.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/android-v2.0.0-preview.1/RiverGuard-Android-Standalone-2.0.0-preview.1.apk) | 4,719,750 bytes (4.72 MB) | [V1 standalone release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/android-v2.0.0-preview.1) |
-| V2 river observatory, preview 2 � repairs and new colours | [RiverGuard-V2-Preview-2.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.2/RiverGuard-V2-Preview-2.apk) | 4,757,369 bytes (4.76 MB) | [V2 preview 2 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.2) |
+| V2 river observatory, preview 2 — repairs and new colours | [RiverGuard-V2-Preview-2.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.2/RiverGuard-V2-Preview-2.apk) | 4,757,369 bytes (4.76 MB) | [V2 preview 2 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.2) |
 | V2 river observatory, preview 1 | [RiverGuard-V2-Preview.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.1/RiverGuard-V2-Preview.apk) | 4,739,999 bytes (4.74 MB) | [V2 preview 1 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.1) |
 
 V2 preview 2 includes the audit repairs and colour hierarchy update. Preview 1
@@ -18,6 +19,10 @@ by side. Updating the same standalone app should retain its data: do not
 uninstall it to retry a download.
 
 For V2 preview 2, an [APK-in-ZIP alternative](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.2/RiverGuard-V2-Preview-2-APK.zip) contains the identical signed APK.
+
+Preview 3 includes the latest warning labels, emphasis, severity ordering and mobile readability fixes. [APK ZIP alternative](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.3/RiverGuard-V2-Preview-3-APK.zip) contains the identical APK. [Laptop ZIP](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.3/RiverGuard-V2-Laptop-Preview-3.zip) includes the same compiled interface.
+
+Preview 3 APK SHA-256: `194844798dd1dadca83715a5fca9626842596bb5665d1b54c4f8a65e13f79482`.
 
 ## If the browser download stops
 
@@ -79,7 +84,7 @@ Public release checks run on manual dispatch, release publication and relevant
 pull requests. A failed transfer check blocks treating that release as verified;
 it does not automatically delete or replace published assets.
 
-## Repair evidence — 22 October 2026
+## Repair evidence â€” 22 October 2026
 
 The V1 standalone APK completed anonymously with HTTP 200, the expected APK
 content type, attachment filename, all 4,719,750 bytes and its published hash.
