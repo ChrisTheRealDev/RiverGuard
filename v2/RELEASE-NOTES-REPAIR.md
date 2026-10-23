@@ -1,3 +1,25 @@
+# V2 observatory preview 4 - built-in setup guide
+
+The Station page now has an offline Setup guide directly under its four setup
+steps. Instructions follow Connect, Check signals, Calibrate and Verify. Expand
+only the topic needed while keeping the setup form and its current inputs.
+
+The guide covers Wi-Fi, receiver address and port, private station configuration,
+one-time PlatformIO upload, wiring/tank precautions, sensor checks, calibration,
+physical verification, two receivers and troubleshooting. Android guidance uses
+the phone receiver; laptop guidance uses the actual service port. No PDF viewer,
+external fetch or AI is required to read it.
+
+Preview 4 uses Android version code 4 and the existing V2 signing identity. Update
+over the previous V2 without uninstalling. Previous releases remain available.
+
+The shared interface build and 33 frontend tests passed. Browser checks exercised
+all topics and all four stages at 1366x768, 390x844 and 320x568, keyboard expansion,
+Wi-Fi input preservation during live updates, and the loaded guide with network
+disconnected. Screenshots were inspected; no horizontal overflow. These checks
+use headless Chrome, not a physical Android phone. Physical commissioning remains
+pending; the guide does not mark sensors verified or modify calibration.
+
 # V2 observatory preview 3 — 23 October 2026
 
 `v2-observatory-preview.3` includes the latest warning and readability refinements

@@ -40,6 +40,14 @@
       "filename": "RiverGuard-V2-Preview-3.apk",
       "size": 4757957,
       "sha256": "194844798dd1dadca83715a5fca9626842596bb5665d1b54c4f8a65e13f79482"
+    },
+    {
+      "id": "v2-preview-4",
+      "label": "V2 observatory preview 4 - built-in offline ESP32 setup guide",
+      "tag": "v2-observatory-preview.4",
+      "filename": "RiverGuard-V2-Preview-4.apk",
+      "size": 4761976,
+      "sha256": "8689f673d21447edea1b4f03eedfda1c7d1e80431e874c09b8c4b6a096deee25"
     }
   ]
 }

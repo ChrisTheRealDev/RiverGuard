@@ -7,6 +7,7 @@ automatically generated **Source code** ZIP to install the app.
 
 | App | Download | Size | Release |
 | --- | --- | --- | --- |
+| V2 observatory, preview 4 - built-in ESP32 setup guide | [RiverGuard-V2-Preview-4.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.4/RiverGuard-V2-Preview-4.apk) | 4,761,976 bytes | [Preview 4 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.4) |
 | V2 observatory, preview 3 - latest warning and readability fixes | [RiverGuard-V2-Preview-3.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.3/RiverGuard-V2-Preview-3.apk) | 4,757,957 bytes | [Preview 3 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.3) |
 | V1 standalone, preserved older interface | [RiverGuard-Android-Standalone-2.0.0-preview.1.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/android-v2.0.0-preview.1/RiverGuard-Android-Standalone-2.0.0-preview.1.apk) | 4,719,750 bytes (4.72 MB) | [V1 standalone release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/android-v2.0.0-preview.1) |
 | V2 river observatory, preview 2 — repairs and new colours | [RiverGuard-V2-Preview-2.apk](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.2/RiverGuard-V2-Preview-2.apk) | 4,757,369 bytes (4.76 MB) | [V2 preview 2 release](https://github.com/ChrisTheRealDev/RiverGuard/releases/tag/v2-observatory-preview.2) |
@@ -23,6 +24,10 @@ For V2 preview 2, an [APK-in-ZIP alternative](https://github.com/ChrisTheRealDev
 Preview 3 includes the latest warning labels, emphasis, severity ordering and mobile readability fixes. [APK ZIP alternative](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.3/RiverGuard-V2-Preview-3-APK.zip) contains the identical APK. [Laptop ZIP](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.3/RiverGuard-V2-Laptop-Preview-3.zip) includes the same compiled interface.
 
 Preview 3 APK SHA-256: `194844798dd1dadca83715a5fca9626842596bb5665d1b54c4f8a65e13f79482`.
+
+Preview 4 includes the built-in offline setup instructions alongside the Station controls. [APK ZIP alternative](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.4/RiverGuard-V2-Preview-4-APK.zip) contains the identical APK. [Laptop ZIP](https://github.com/ChrisTheRealDev/RiverGuard/releases/download/v2-observatory-preview.4/RiverGuard-V2-Laptop-Preview-4.zip) includes the same compiled interface.
+
+Preview 4 APK SHA-256: `8689f673d21447edea1b4f03eedfda1c7d1e80431e874c09b8c4b6a096deee25`.
 
 ## If the browser download stops
 

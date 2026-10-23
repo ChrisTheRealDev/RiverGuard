@@ -113,3 +113,16 @@ contrast.json and keyboard.json. Do not publish the test database.
 Frontend build and all 31 tests pass, including warning-summary priority and
 non-colour warning labelling. Updated compiled assets are served locally on 8510;
 this follow-up does not replace the already published Preview 2 APK/ZIP.
+
+
+## Preview 4: built-in setup guide
+
+Used the actual built frontend/backend with an isolated station/database at 8514.
+All guide topics expand in Connect, Check signals, Calibrate and Verify. Checked
+1366x768, 390x844 and 320x568: 12 stage/viewport checks, no horizontal overflow;
+screenshots inspected. Native details controls support keyboard Space expansion.
+Synthetic Wi-Fi name/password remain intact when opening/closing the guide and
+across monitoring refreshes. The loaded guide expands while offline without a
+PDF viewer or external fetch. Phone-specific text/port is covered by component
+tests; actual Android-device testing is still pending. Evidence remains local
+in output/setup-guide-check; do not publish its database.

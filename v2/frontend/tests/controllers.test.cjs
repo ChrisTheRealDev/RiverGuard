@@ -42,3 +42,19 @@ test('warning signals lead the three-item summary and expose a non-colour warnin
  assert(nodes(h.value).some(n=>n.props.className==='condition-status'&&text(n).includes('Warning')));
  assert.deepEqual(evaluation.signals.map(s=>s.kind),original);h.unmount();
 });
+
+test('setup guide uses the actual receiver and keeps phone instructions independent of a laptop',async()=>{
+ const h=harness();const {SetupGuide}=await h.module('components/SetupGuide.tsx',['SetupGuide']);
+ h.mount(SetupGuide,{step:0,phone:true,receiverPort:8000});let copy=text(h.value);
+ assert.match(copy,/No laptop needs to stay running/);assert.match(copy,/http:\/\/192\.168\.1\.23:\s*8000/);assert.match(copy,/Save private station_config.h/);assert.match(copy,/Replacing the key invalidates/);
+ assert(!nodes(h.value).some(n=>n.type==='iframe'||n.type==='a'));
+ h.update({step:0,phone:false,receiverPort:8123});await h.flush();copy=text(h.value);
+ assert.match(copy,/Keep the V2 service running/);assert.match(copy,/http:\/\/192\.168\.1\.23:\s*8123/);h.unmount();
+});
+test('setup guide follows signal, calibration and verification stages without marking them complete',async()=>{
+ const h=harness();const {SetupGuide}=await h.module('components/SetupGuide.tsx',['SetupGuide']);
+ h.mount(SetupGuide,{step:1,phone:true,receiverPort:8000});assert.match(text(h.value),/Save enabled probes/);
+ h.update({step:2,phone:true,receiverPort:8000});await h.flush();assert.match(text(h.value),/known NTU standards/);assert.match(text(h.value),/Station acknowledged/);
+ h.update({step:3,phone:true,receiverPort:8000});await h.flush();assert.match(text(h.value),/Record physical check/);assert.match(text(h.value),/no unsaved edits/);
+ assert(!nodes(h.value).some(n=>n.type==='input'||n.props.onClick));h.unmount();
+});

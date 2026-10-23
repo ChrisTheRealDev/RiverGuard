@@ -141,3 +141,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,su
 }
 
 .condition:is(.watch,.alert) .condition-art{display:none}
+
+/* The guide stays beside setup, without replacing or remounting the form. */
+.setup-guide{margin:0 0 24px;border:1px solid rgba(174,190,239,.3);border-radius:18px;background:linear-gradient(125deg,rgba(77,65,115,.23),rgba(18,48,62,.6));overflow:hidden}
+.setup-guide>summary{display:flex;align-items:center;gap:13px;padding:17px 20px;list-style:none;min-height:68px;color:#daceff}
+.setup-guide>summary::-webkit-details-marker{display:none}
+.setup-guide>summary>span{flex:1;min-width:0}.setup-guide>summary strong{display:block;font-size:15px}.setup-guide>summary small{display:block;color:#b7c8d5;font-size:12px;margin-top:4px}
+.setup-guide>summary>svg{flex-shrink:0}.setup-guide>summary>svg:last-child{transition:transform .18s}.setup-guide[open]>summary>svg:last-child{transform:rotate(180deg)}
+.setup-guide-content{padding:0 22px 20px;max-width:900px}.setup-guide .guide-intro{font-size:14px;color:#e1e9ef}.setup-guide .guide-context{font-size:13px;color:#b9cad6}
+.setup-guide-content details{margin:12px 0 0}.setup-guide-content summary{font-size:14px;font-weight:600;padding:14px 0;color:#ddd3f7;min-height:48px;overflow-wrap:anywhere}
+.setup-guide-content p,.setup-guide-content li,.setup-guide-content dd{font-size:14px;line-height:1.75;color:#c2d0db}
+.setup-guide-content ol,.setup-guide-content ul{padding-left:24px;margin:8px 0 15px}.setup-guide-content li{padding-left:4px;margin:11px 0}
+.setup-guide-content code{font-family:ui-monospace,monospace;font-size:12px;color:#d8e8f3;overflow-wrap:anywhere}
+.setup-guide .guide-note{padding:12px 14px;background:rgba(127,154,209,.1);border-left:3px solid #b4a4e9;border-radius:6px}
+.guide-troubleshooting dt{font-size:14px;font-weight:600;color:#e6d7b8;margin-top:17px}.guide-troubleshooting dd{margin:5px 0 15px}
+@media(max-width:650px){.setup-guide>summary{padding:16px;gap:11px}.setup-guide-content{padding:0 16px 17px}.setup-guide-content ol,.setup-guide-content ul{padding-left:20px}.setup-guide-content li{padding-left:2px}.setup-guide>summary small{font-size:12px;line-height:1.6}}
