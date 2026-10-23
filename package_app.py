@@ -9,7 +9,7 @@ files=[root/name for name in ['api.py','ui_api.py','security.py','serve.py','dat
 files += [root/'.streamlit'/'config.toml',root/'reading_visuals.py',root/'sensor_support.py',root/'rill_verification.py',root/'rill_models.py',root/'stop.ps1',root/'Stop RiverGuard.cmd']
 files += [root/'station_setup.py',root/'setup_ui.py']
 files += list((root/'output'/'pdf').glob('RiverGuard-Friend-Setup.pdf'))
-for directory in ['assets','hardware','evaluation','tests']:
+for directory in ['assets','hardware','evaluation','tests','wiki']:
     files += [p for p in (root/directory).rglob('*') if p.is_file() and not any(part in {'__pycache__','.pio'} for part in p.parts) and p.name!='station_config.h' and p.suffix not in ('.pyc','.pyo')]
 files += [p for p in (root/'frontend').rglob('*') if p.is_file() and not any(part in {'node_modules','.vite','coverage'} for part in p.relative_to(root/'frontend').parts) and not p.name.startswith('.env') and not p.name.endswith('.tsbuildinfo')]
 assert (root/'frontend/dist/index.html').is_file(),'Build the frontend before packaging.'

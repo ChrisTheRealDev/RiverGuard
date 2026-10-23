@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mergeConversation,mergeJob,replyInTranscript,completedReplyPending,watchedJobId,replyFailure} from '../src/chatState.ts';
+import {mergeConversation,mergeJob,replyInTranscript,completedReplyPending,watchedJobId,replyFailure,shouldFollowReply} from '../src/chatState.ts';
 
 const question={role:'user',content:'What does pH mean?'};
 const answer={role:'assistant',content:'A pH of 7 is neutral.'};
@@ -9,6 +9,14 @@ const generating={id:'job-a',chat_id:'chat-a',state:'generating',text:'A pH of 7
 const completed={...generating,state:'completed',text:answer.content,sequence:5,revision:3,verification:{passed:true,reasons:[],can_continue:true}};
 const canonical={...conversation,revision:3,messages:[question,answer],active_job:null};
 const visibleAnswers=(job,chat)=>chat.messages.filter(m=>m.role==='assistant').length+Number(completedReplyPending(job,chat));
+
+test('empty chats keep the welcome visible while replies follow only readers at the bottom',()=>{
+ assert.equal(shouldFollowReply(0,null,false,true),false);
+ assert.equal(shouldFollowReply(1,null,false,true),true);
+ assert.equal(shouldFollowReply(0,generating,false,true),true);
+ assert.equal(shouldFollowReply(1,generating,false,false),false);
+ assert.equal(shouldFollowReply(1,generating,true,true),false);
+});
 
 test('a completed reply remains visible during delayed or failed transcript refresh, then appears exactly once',()=>{
  let chat=conversation,job=generating;

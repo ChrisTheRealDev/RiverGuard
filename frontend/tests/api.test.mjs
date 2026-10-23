@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {api,post,setCsrf,query,time,requestId,ApiError} from '../src/api.ts';
+import {api,post,setCsrf,query,time,age,requestId,ApiError} from '../src/api.ts';
 import {historyScope,pageRows} from '../src/historyState.ts';
 
 test('HTTP-compatible request IDs remain unique UUIDs without crypto.randomUUID',()=>{
@@ -19,6 +19,9 @@ test('conflicts retain server detail, status and retry delay',async()=>{
 });
 test('query encoding does not drop zero or false; display uses MYT',()=>{
  assert.equal(query({limit:0,reset:false,cursor:undefined,device_id:'river 1'}),'limit=0&reset=false&device_id=river+1');assert.match(time('2026-10-21T00:05:06Z'),/08:05:06/);
+});
+test('transmission age stays readable across unit boundaries and unknown values',()=>{
+ for(const [input,expected] of [[0,'0s ago'],[-5,'0s ago'],[59,'59s ago'],[59.6,'1m 0s ago'],[3599,'59m 59s ago'],[3600,'1h 0m ago'],[86399,'23h 59m ago'],[86400,'1d 0h ago'],[180628,'2d 2h ago'],[null,'Unknown'],[undefined,'Unknown'],[NaN,'Unknown'],[Infinity,'Unknown']])assert.equal(age(input),expected);
 });
 test('switching from reading rows to signals never renders stale reading objects as alerts',()=>{
  const readings=[{id:1,ph:7.1,timestamp:'2026-10-21T00:00:00Z'}];

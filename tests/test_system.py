@@ -30,6 +30,13 @@ def test_scenarios_and_evaluation():
     assert len(evidence)==560
     assert metrics.accuracy.between(0,1).all()
 
+def test_assess_explanation_always_names_a_contributor():
+    model=core.train()
+    flag,explanation=core.assess(model,core.sample('Combined anomaly',20))
+    assert flag
+    assert 'combined measurements' not in explanation
+    assert any(name in explanation for name in ['Acidity','Cloudiness','Temperature'])
+
 def test_dashboard_smoke(tmp_path,monkeypatch):
     monkeypatch.setattr(core,'DB',tmp_path/'dashboard.db')
     from streamlit.testing.v1 import AppTest

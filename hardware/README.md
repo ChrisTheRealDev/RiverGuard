@@ -1,12 +1,12 @@
 # RiverGuard station setup (remote-v1)
 
-Open **Sensors** in the app navigation for the **Connect**, **Check signals**, **Calibrate** and **Verify** steps. The printable walkthrough is **output/pdf/RiverGuard-Friend-Setup.pdf**; the diagram is **hardware/RiverGuard-Wiring.png** (editable SVG beside it).
+Open **Setup** in the app navigation for the **Connect**, **Check signals**, **Calibrate** and **Verify** steps. The printable walkthrough is **output/pdf/RiverGuard-Friend-Setup.pdf**; the diagram is **hardware/RiverGuard-Wiring.png** (editable SVG beside it).
 
 ## One initial upload
 
 1. Run **Setup RiverGuard.cmd** once, then **Start RiverGuard.cmd** on the laptop. Keep the launcher open; it opens an authenticated local browser session. The app is on port 8501 and the sensor receiver on port 8000. Rill needs Ollama, but ingestion and calibration do not.
 2. Use `ipconfig` to find the laptop's Wi-Fi IPv4 address. Keep both devices on the same trusted private Wi-Fi. From another device, `http://LAPTOP_IP:8000/health` should report `status: ok`. Check private Windows firewall rules and Wi-Fi client isolation if needed. This public health check does not authorize sensor writes.
-3. In **Sensors > Connect**, enter an ID such as `riverguard-01` and choose **Register new station**. Enter the 2.4 GHz Wi-Fi name/password and receiver URL, `http://LAPTOP_IP:8000/api/v1/readings`. Choose **Download station_config.h**. Put the downloaded file in **hardware/firmware/include** and verify the GPIO assignments against your board labels. It includes `API_TOKEN`, a private credential bound to this station, as well as the network details. The token is shown once: retain a secure copy and never share this header. Existing stations keep their original private file.
+3. In **Setup > Connect**, enter an ID such as `riverguard-01` and choose **Register new station**. Enter the 2.4 GHz Wi-Fi name/password and receiver URL, `http://LAPTOP_IP:8000/api/v1/readings`. Choose **Download station_config.h**. Put the downloaded file in **hardware/firmware/include** and verify the GPIO assignments against your board labels. It includes `API_TOKEN`, a private credential bound to this station, as well as the network details. The token is shown once: retain a secure copy and never share this header. Existing stations keep their original private file.
 4. Install VS Code with PlatformIO IDE, open **hardware/firmware** and use Build/Upload. Alternatively, with PlatformIO Core CLI already installed, build/upload from the app root:
 
 ```
@@ -15,7 +15,7 @@ pio run --project-dir hardware/firmware --target upload
 pio device monitor --baud 115200
 ```
 
-5. Open Serial Monitor at 115200 baud. After NTP sync, a submitted JSON sample should be followed by **Receiver status: 201**. In **Sensors > Check signals**, confirm the wiring and voltage protection, then enable Temperature first. Select **Sensors** as the reading source and your station in the top bar to see its readings.
+5. Open Serial Monitor at 115200 baud. After NTP sync, a submitted JSON sample should be followed by **Receiver status: 201**. In **Setup > Check signals**, confirm the wiring and voltage protection, then enable Temperature first. Select **Sensors** as the reading source and your station in the top bar to see its readings.
 
 Existing unauthenticated firmware needs this one authenticated upgrade. All channels initially stay disabled. There are no calibration constants in the new firmware configuration. Later enable/calibration changes happen in the app without a reflash. Wi-Fi, URL, pin changes or a replacement `API_TOKEN` require another firmware upload. Private station_config.h is excluded from Git and the share ZIP. The template remains available for experienced users, but its placeholder token cannot authenticate.
 
@@ -27,7 +27,7 @@ On the authenticated laptop, open **Settings > Create pairing code**. On a phone
 
 ## App workflow
 
-1. In Sensors > Connect, register a new station before uploading, or open the exact ID of an existing station.
+1. In Setup > Connect, register a new station before uploading, or open the exact ID of an existing station.
 2. Check the wiring and voltage protection, then enable each installed probe. Save enabled sensors. The station polls on its next sample/retry cycle; the page shows saved revision versus the revision acknowledged by a received packet. Offline stations stay pending.
 3. Check the live raw signals and sensor health. An analog voltage alone cannot prove that a probe is physically connected.
 4. For pH, use two certified buffers spanning the intended readings. Confirm the probe has settled; capture each signal or enter measured ADC-pin mV, enter buffer pH and Save pH calibration. No extrapolation or automatic temperature compensation is used.

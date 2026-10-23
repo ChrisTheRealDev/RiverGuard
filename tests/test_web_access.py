@@ -49,6 +49,23 @@ def test_bootstrap_pairing_csrf_and_revocation(web):
         assert not con.execute('SELECT 1 FROM browser_sessions WHERE id=?',(phone_id,)).fetchone()
 
 
+def test_new_and_existing_browser_sessions_have_readable_labels(web):
+    web.headers['User-Agent']='Mozilla/5.0 (Windows NT 10.0) Chrome/131.0 Safari/537.36 Edg/131.0'
+    owner(web)
+    assert web.get('/api/ui/sessions').json()['sessions'][0]['label']=='Edge · Windows'
+    code=web.post('/api/ui/pair-code').json()['code']
+    phone=TestClient(web.app,base_url='http://localhost',client=('192.168.1.5',5555))
+    try:
+        response=phone.post('/api/ui/pair',json={'code':code},headers={'Origin':'http://localhost','User-Agent':'Mozilla/5.0 (iPhone) Version/18.0 Safari/605.1'})
+        assert response.status_code==200
+        assert {row['label'] for row in web.get('/api/ui/sessions').json()['sessions']}=={'Edge · Windows','Safari · iOS'}
+        with core.connect() as con:
+            security.new_session(con,'Laptop · Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36')
+        assert 'Browser · Windows' in {row['label'] for row in web.get('/api/ui/sessions').json()['sessions']}
+    finally:
+        phone.close()
+
+
 def test_pair_code_expiry_attempt_limit_and_remote_bootstrap(web):
     owner(web)
     code=web.post('/api/ui/pair-code').json()['code']

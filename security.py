@@ -136,6 +136,21 @@ def new_session(con, label):
     return token, session
 
 
+def browser_label(user_agent):
+    ua = (user_agent or '').lower()
+    browser = next((name for markers, name in [
+        (('edg/', 'edga/', 'edgios/'), 'Edge'), (('opr/', 'opios/'), 'Opera'),
+        (('samsungbrowser/',), 'Samsung Internet'), (('firefox/', 'fxios/'), 'Firefox'),
+        (('chrome/', 'crios/', 'chromium/'), 'Chrome'), (('safari/',), 'Safari')]
+        if any(marker in ua for marker in markers)), 'Browser')
+    system = next((name for markers, name in [
+        (('iphone', 'ipad', 'ipod'), 'iOS'), (('android',), 'Android'),
+        (('windows',), 'Windows'), (('cros',), 'ChromeOS'),
+        (('macintosh', 'mac os x'), 'macOS'), (('linux',), 'Linux')]
+        if any(marker in ua for marker in markers)), None)
+    return browser + (' · ' + system if system else '')
+
+
 def bootstrap_token():
     token = secrets.token_urlsafe(32)
     with core.connect() as con:
@@ -154,7 +169,7 @@ def bootstrap(request, token):
         if not row or row[0] <= time.time():
             raise HTTPException(401, 'This setup link expired. Open Start RiverGuard again for a new link.')
         con.execute('DELETE FROM browser_bootstrap WHERE token_hash=?', (digest(token),))
-        return new_session(con, 'Laptop · '+request.headers.get('user-agent', 'browser')[:70])
+        return new_session(con, browser_label(request.headers.get('user-agent')))
 
 
 def pair_code():
@@ -186,7 +201,7 @@ def pair(request, code):
                 error = (401, 'That code is invalid, expired or already used. Get a new code from a paired device.')
             else:
                 con.execute('UPDATE browser_pair_codes SET used=1 WHERE code_hash=?', (digest(code.strip()),))
-                result = new_session(con, request.headers.get('user-agent', 'Paired browser')[:100])
+                result = new_session(con, browser_label(request.headers.get('user-agent')))
     # Raise after committing failed-attempt counters.
     if error:
         raise HTTPException(*error, headers={'Retry-After':'60'} if error[0]==429 else None)
@@ -196,7 +211,7 @@ def pair(request, code):
 def sessions(current_id):
     with core.connect() as con:
         rows = con.execute('SELECT id,label,created FROM browser_sessions WHERE expires>? ORDER BY created DESC', (time.time(),)).fetchall()
-    return [dict(id=r[0], label=r[1], created=r[2], current=r[0]==current_id) for r in rows]
+    return [dict(id=r[0], label=browser_label(r[1]) if 'mozilla/' in r[1].lower() else r[1], created=r[2], current=r[0]==current_id) for r in rows]
 
 
 def revoke(session_id):

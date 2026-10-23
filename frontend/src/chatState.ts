@@ -2,6 +2,8 @@ import type {Conversation,Job} from './types';
 
 export const replyRunning=(job:Job|null)=>Boolean(job&&['queued','generating','writing','running'].includes(job.state));
 
+export const shouldFollowReply=(messageCount:number,job:Job|null,history:boolean,nearBottom:boolean)=>!history&&nearBottom&&(messageCount>0||Boolean(job));
+
 /** The POST acknowledgement is enough to observe a job even if transcript fetch fails. */
 export function watchedJobId(conversation:Conversation|null,job:Job|null,chatId:string):string|undefined{
  if(job?.chat_id===chatId&&replyRunning(job))return job.id;

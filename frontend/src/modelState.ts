@@ -5,6 +5,9 @@ export type ModelChoice={value:string;dirty:boolean};
 export function reconcileModelChoice(choice:ModelChoice,selected:string):ModelChoice{
  return choice.dirty?choice:{value:selected,dirty:false};
 }
+export function modelListPlaceholder(everLoaded:boolean,initialLoadInFlight:boolean):string{
+ return !everLoaded&&initialLoadInFlight?'Checking installed models…':'Choose an installed model';
+}
 export function modelActions(info:ModelInventory|null,choice:string){
  const installed=Boolean(info?.models.some(model=>model.name===choice));
  const selectedInstalled=Boolean(info?.models.some(model=>model.name===info.selected_model));

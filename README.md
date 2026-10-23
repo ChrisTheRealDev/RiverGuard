@@ -2,6 +2,8 @@
 
 Private-network river monitoring with React, TypeScript, Plotly, FastAPI and SQLite. One Python service owns simulation, sensor data and durable Rill jobs. Synthetic data is labelled throughout. Node.js is needed to develop/build the frontend, not to run the friend ZIP.
 
+Start with the [RiverGuard wiki](wiki/Home.md) for a guided explanation of the architecture, data flow, frontend and Rill.
+
 ## Windows setup
 
 1. Clone this repository or extract its source ZIP. Install Python 3.14 with Python on PATH (tested with 3.14.2).
@@ -76,7 +78,7 @@ Run `python benchmark_rill_quality.py` for the 20-question benchmark. Evidence i
 
 ## Development, review and packaging
 
-Frontend: run `npm ci`, `npm run build` and `npm test` in `frontend`. Built `frontend/dist` is included in the friend ZIP. Run `.venv\Scripts\python -m pytest -q` for backend regressions.
+Frontend: run `npm ci`, `npm run build` and `npm test` in `frontend`. Built `frontend/dist` is included in the friend ZIP. Run `.venv\Scripts\python -m pytest tests -q` for backend regressions.
 
 Isolated review: `.venv\Scripts\python serve.py --web-port 8504 --sensor-port 8001 --db output/review.db`. `--no-browser` writes a protected, single-use owner link beside that database; it expires in two minutes and is removed on exit. Never share it. The ordinary launcher serves the replacement after release checks. Prior Streamlit source is retained for reference/rollback, not used by the new UI.
 

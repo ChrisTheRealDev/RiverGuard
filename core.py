@@ -13,6 +13,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 
 DB = Path(os.environ.get('RIVERGUARD_DB', str(Path(__file__).parent / 'data' / 'riverguard.db')))
 FEATURES = ['ph', 'turbidity', 'temperature']
+FEATURE_NAMES = {'ph': 'Acidity', 'turbidity': 'Cloudiness', 'temperature': 'Temperature'}
 SCENARIOS = ['Normal river', 'Sudden change', 'Increasing turbidity', 'Abnormal pH', 'Temperature change', 'Rising water level', 'Combined anomaly']
 SCHEMA_VERSION = 3
 _migration_lock = threading.RLock()
@@ -133,8 +134,8 @@ def assess(model, v):
     if any(v.get(k) is None for k in FEATURES): return None, 'AI unavailable: incomplete sensor measurements.'
     flag = bool(model.predict([[v[k] for k in FEATURES]])[0] == -1)
     deviations = [(abs((v[k]-mean)/sd), k) for k,mean,sd in zip(FEATURES,[7.1,12,27],[.12,2,.4])]
-    contributors = [k for z,k in sorted(deviations, reverse=True) if z > 3]
-    return flag, ('Unusual combination; largest deviations from synthetic baseline: ' + ', '.join(contributors or ['combined measurements']) + '. Not confirmed pollution.') if flag else 'Within learned synthetic baseline.'
+    contributors = [FEATURE_NAMES[k] for z,k in sorted(deviations, reverse=True)[:2]]
+    return flag, ('Unusual combination; largest deviations from synthetic baseline: ' + ', '.join(contributors) + '. Not confirmed pollution.') if flag else 'Within learned synthetic baseline.'
 
 def save(v, source, device_id, timestamp=None, calibrated=False, model=None, sample_id=None):
     v = sanitize_legacy(v)
