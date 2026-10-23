@@ -48,6 +48,14 @@
       "filename": "RiverGuard-V2-Preview-4.apk",
       "size": 4761976,
       "sha256": "8689f673d21447edea1b4f03eedfda1c7d1e80431e874c09b8c4b6a096deee25"
+    },
+    {
+      "id": "v2-preview-5",
+      "label": "V2 observatory preview 5 - animations and setup navigation fixes",
+      "tag": "v2-observatory-preview.5",
+      "filename": "RiverGuard-V2-Preview-5.apk",
+      "size": 4762902,
+      "sha256": "f002047983771a751088ece2a158331cec250f05eb6487f0a0f289901818ecbc"
     }
   ]
 }

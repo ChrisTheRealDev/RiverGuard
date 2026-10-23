@@ -126,3 +126,19 @@ across monitoring refreshes. The loaded guide expands while offline without a
 PDF viewer or external fetch. Phone-specific text/port is covered by component
 tests; actual Android-device testing is still pending. Evidence remains local
 in output/setup-guide-check; do not publish its database.
+
+
+## Setup walkthrough and interaction polish - 23 October 2026
+
+Checked compiled V2 in headless Chrome against an isolated real FastAPI/SQLite installation. In-app browser automation failed with a kernel asset path error. User data, credentials and the live receiver were not changed.
+
+- Clicked every guide topic across all four stages at 1366x650, 1366x768, 1280x720, 1024x768, 390x844 and 320x568. No horizontal overflow; guide summary targets at least 49 px. Inspected screenshots, plus 125%/200% equivalent CSS-pixel reflow (not actual browser zoom).
+- Created a synthetic station, started monitoring, downloaded its configuration and verified its URL/filename without retaining credentials in reports. Cancelled key replacement, expanded both diagrams and downloaded the PDF.
+- Verified probe saves, persisted calibration edits, missing-sensor capture blocks, incompatible watch rejection and blocked physical verification. No physical verification was declared.
+- Reproduced and fixed two issues: Connect fields erased on step changes; footer Next left the next guide above the viewport. Connect stays mounted between steps with credentials in memory only; navigation scrolls to and focuses the selected step.
+- Shortened repeated guide introductions, clarified an already-running receiver, and added an explicitly illustrative usable-height example.
+- Added hover border/lift, press compression, selection settling and disclosure/dialog reveal. Reduced motion disables movement. Checked focused typing across live polls, reading selections, keyboard expansion, dialog Escape/focus restoration and loaded offline help.
+- Measured desktop hover at -2 px and press at +1 px/0.98 scale. Touch emulation passed without sticky hover. Actual warning scenarios retained the red border, inset stripe and explicit Warning label on desktop/mobile screenshots.
+- Quieter glass surfaces and shorter labels replace decorative gradients and condition artwork; category colours and warnings remain distinct.
+
+Evidence: output/setup-guide-check/audit/audit.json (before); audit-after/audit.json, warning-touch.json and touch-verification.json (after), with screenshots in those folders. Scripts: audit.py, warning-touch.py and touch-only.py. Touch assertions wait for the press-release transition to settle. Frontend: 33 tests and TypeScript/Vite build passed. Physical Android, virtual keyboard and sensor checks remain pending. Checks completed before packaging Preview 5; see release reports for build and download verification.

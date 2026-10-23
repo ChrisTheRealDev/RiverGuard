@@ -1,3 +1,25 @@
+## RiverGuard V2 Preview 5 - animations and setup fixes
+
+- Buttons lift and brighten on desktop hover, with press feedback on desktop and touch.
+- Selection and guide-opening animations respect reduced-motion preferences. Live monitoring does not replay them or interrupt typing.
+- Quieter glass surfaces, fewer decorative gradients and shorter labels; sensor colours and prominent warnings remain.
+- Wi-Fi fields and receiver address remain intact when switching setup steps. Next scrolls to and focuses the new step.
+- Shorter, clearer setup instructions with the guide still available offline.
+
+### Downloads
+- **Android:** `RiverGuard-V2-Preview-5.apk`. Version `2.1.0-v2.preview.5`, code **5**, same V2 package and signing certificate. Install over existing V2; do not uninstall and lose saved data. Standalone phone operation remains supported.
+- **APK ZIP fallback:** `RiverGuard-V2-Preview-5-APK.zip` contains the identical signed APK.
+- **Laptop:** `RiverGuard-V2-Laptop-Preview-5.zip`. Extract all files, install **Python 3.14 on PATH**, run `v2/Setup RiverGuard V2.cmd`, then `v2/Start RiverGuard V2.cmd`. Initial setup needs internet; Node.js is not required. Browser port 8510; sensor receiver port 8010. Use trusted private Wi-Fi.
+
+For an existing laptop installation, stop its V2 service and back up its data before replacing application files. Keep your data and private station configuration; do not overwrite them with a fresh installation. Do not run old and new receivers on the same ports.
+
+### Verification
+33 frontend tests and the TypeScript/Vite build passed. Browser checks covered all four guide stages and topics at six desktop/phone viewport sizes, keyboard controls, configuration/PDF downloads, preserved drafts, disabled unsafe captures, and readable warning states. Hover, press, touch emulation and reduced-motion checks passed. Reflow checks included 125%/200% equivalent CSS-pixel widths.
+
+Attached reports record Android signature/assets/unit tests/lint, laptop clean-extraction checks and anonymous full/resumed public downloads. Physical-phone install/update, virtual keyboard, background operation and sensor commissioning remain pending. Previous releases are preserved; retain matching database migration backups for rollback.
+
+---
+
 # V2 observatory preview 4 - built-in setup guide
 
 The Station page now has an offline Setup guide directly under its four setup
