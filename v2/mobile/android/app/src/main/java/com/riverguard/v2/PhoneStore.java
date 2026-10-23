@@ -197,6 +197,10 @@ public final class PhoneStore extends SQLiteOpenHelper implements PhoneReceiver.
             if(normalized.optBoolean("verified")) {
                 if(!WatchPolicy.valid("esp32",policy.optJSONObject("settings"),normalized,policy.optBoolean("needsReview")))throw new Problem(422,"Save watch levels within the calibrated observable height before verification.");
                 try(Cursor ack=db.rawQuery("SELECT ack_revision FROM stations WHERE device_id=?",new String[]{device})){if(!ack.moveToFirst()||ack.isNull(0)||ack.getLong(0)!=expected)throw new Problem(409,"Wait for the station to acknowledge this calibration before verification.");}
+                JSONObject latest=readings("esp32",device,1,null).optJSONArray("items").optJSONObject(0);
+                SignalEvaluator.Reading evidence=latest==null?null:new SignalEvaluator.Reading(latest,System.currentTimeMillis());
+                if(evidence==null||!evidence.fresh||evidence.revision!=expected)throw new Problem(422,"Verification needs fresh readings at the saved calibration revision. Check signals and try again.");
+                for(Double value:evidence.values)if(value==null)throw new Problem(422,"Verification needs usable readings from all four probes. Check signals and try again.");
             }
             ContentValues row=new ContentValues();row.put("device_id",device);row.put("revision",expected+1);row.put("settings",normalized.toString());row.put("created_at",Instant.now().toString());
             db.insertOrThrow("configurations",null,row);db.delete("state","key=?",new String[]{"monitor-error:"+device});db.setTransactionSuccessful();return json("revision",expected+1,"settings",normalized);

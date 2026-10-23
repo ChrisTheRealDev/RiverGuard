@@ -348,6 +348,11 @@ class Store:
                 ack = db.execute('SELECT ack_revision FROM stations WHERE device_id=?', (device,)).fetchone()[0]
                 if not watch['valid'] or ack != expected:
                     raise Problem(422, 'Save compatible watch levels and wait for the station to acknowledge calibration before verification.')
+                from .signals import derive
+                latest = db.execute("SELECT * FROM readings WHERE source='esp32' AND device_id=? ORDER BY measured_ms DESC,id DESC LIMIT 1", (device,)).fetchone()
+                evidence = derive(self.row(latest), time.time()*1000) if latest else None
+                if not evidence or not evidence['fresh'] or evidence['revision'] != expected or any(v is None for v in evidence['values'].values()):
+                    raise Problem(422, 'Verification needs fresh usable readings from all four probes at the saved calibration revision. Check signals and try again.')
             db.execute('INSERT INTO configurations VALUES (?,?,?,?)', (device, expected+1, encode(normalized), iso()))
         return {'revision': expected+1, 'settings': normalized}
 

@@ -56,6 +56,14 @@
       "filename": "RiverGuard-V2-Preview-5.apk",
       "size": 4762902,
       "sha256": "f002047983771a751088ece2a158331cec250f05eb6487f0a0f289901818ecbc"
+    },
+    {
+      "id": "v2-preview-6",
+      "label": "V2 observatory preview 6 - audit repairs, natural simulation and five-minute Activity",
+      "tag": "v2-observatory-preview.6",
+      "filename": "RiverGuard-V2-Preview-6.apk",
+      "size": 4764891,
+      "sha256": "74bb2df8c4515480ab03b0b3500e0452de04c54296f55e5cd623efe7bd59dbc9"
     }
   ]
 }

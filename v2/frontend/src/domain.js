@@ -179,14 +179,16 @@
     return facts;
   }
   function syntheticSample(scenario = 'Normal river', step = 0, now = Date.now()) {
-    step = Math.max(0, Math.floor(finite(step) ? step : 0)) % 120; const wave = Math.sin(step * .7), active = step >= 10;
-    // Deterministic bounded fixture shared with service-owned Demo producers.
-    const sample = { timestamp: new Date(now).toISOString(), ph: 7.2 + .08 * wave, turbidity: 14 + 2 * wave, temperature: 27 + .2 * wave, water_level: 30 + .15 * wave, scenario };
-    if (active && /cloud|turbid|combined/i.test(scenario)) sample.turbidity = Math.min(250, 65 + (step - 10) * 2);
+    step = Math.max(0, Math.floor(finite(step) ? step : 0)) % 120; const active = step >= 10, seed = Math.floor(now / 240000) % 1000003;
+    const randomAt = (index, channel) => { let x = (index + channel * 131 + seed * 8191) >>> 0; for (let i=0;i<2;i++) x = Math.imul(x ^ (x >>> 16), 0x45d9f3b) >>> 0; return ((x ^ (x >>> 16)) >>> 0) / 4294967295 * 2 - 1; };
+    const variation = (channel, span=5) => { const position=step/span,index=Math.floor(position),t=position-index,blend=t*t*(3-2*t); return .8*(randomAt(index,channel)*(1-blend)+randomAt(index+1,channel)*blend)+.2*randomAt(step,channel+50); };
+    // Independent slow drift and small jitter; shared with the service/native producers.
+    const sample = { timestamp: new Date(now).toISOString(), ph: 7.2 + .12 * variation(1), turbidity: 14 + 4 * variation(2), temperature: 27 + .25 * variation(3,20), water_level: 30 + .3 * variation(4), scenario };
+    if (active && /cloud|turbid|combined/i.test(scenario)) sample.turbidity = 65 + 120 * (1-Math.exp(-(step-10)/24)) + 6 * variation(2);
     if (active && /ph|combined/i.test(scenario)) sample.ph = 9.1;
     if (active && /temperat|combined/i.test(scenario)) sample.temperature = 35;
-    if (active && /ris|water.level|combined/i.test(scenario)) sample.water_level = Math.min(150, 45 + (step - 10) * 4);
-    if (active && /sudden/i.test(scenario)) { sample.ph = 5.8; sample.turbidity = 80; }
+    if (active && /ris|water.level|combined/i.test(scenario)) sample.water_level = 45 + 100 * (1-Math.exp(-(step-10)/20)) + .6 * variation(4);
+    if (active && /sudden/i.test(scenario)) { sample.ph = 5.8 + .12 * variation(1); sample.turbidity = 80 + 8 * variation(2); }
     return sample;
   }
   return { deriveReading, evaluate, buildFacts, validateCalibration, syntheticSample, DEFAULT_WATCH };

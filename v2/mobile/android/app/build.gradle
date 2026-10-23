@@ -10,8 +10,8 @@ android {
         applicationId "com.riverguard.v2"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "2.1.0-v2.preview.5"
+        versionCode 6
+        versionName "2.1.0-v2.preview.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

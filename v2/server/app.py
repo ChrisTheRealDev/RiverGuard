@@ -50,6 +50,24 @@ def addresses():
     return sorted(result)
 
 
+class LocalHostMiddleware:
+    """Refresh local interface hosts without allowing arbitrary Host headers."""
+    def __init__(self, app, static_hosts):
+        self.app, self.static_hosts = app, static_hosts
+        self.validator = TrustedHostMiddleware(app, allowed_hosts=static_hosts)
+        self.expires = 0
+        self.lock = asyncio.Lock()
+
+    async def __call__(self, scope, receive, send):
+        if scope['type'] in ('http', 'websocket') and time.monotonic() >= self.expires:
+            async with self.lock:
+                if time.monotonic() >= self.expires:
+                    current = await anyio.to_thread.run_sync(addresses)
+                    self.validator = TrustedHostMiddleware(self.app, allowed_hosts=[*self.static_hosts, *current])
+                    self.expires = time.monotonic()+5
+        return await self.validator(scope, receive, send)
+
+
 def create_apps(database, web_port=8510, sensor_port=8010, extra_hosts=()):
     store = Store(database); access = Access(store)
     monitoring = {'error': None, 'heartbeat': 0, 'stationErrors': {}, 'stopping': False}
@@ -113,11 +131,11 @@ def create_apps(database, web_port=8510, sensor_port=8010, extra_hosts=()):
             response.headers['Referrer-Policy'] = 'no-referrer'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         return response
-    hostnames = ['localhost', '127.0.0.1', '[::1]', socket.gethostname(), *addresses(), *extra_hosts]
+    hostnames = ['localhost', '127.0.0.1', '[::1]', socket.gethostname(), *extra_hosts]
     for app in (web, sensor):
         app.state.store = store; app.state.access = access
         app.add_middleware(BodyLimit)
-        app.add_middleware(TrustedHostMiddleware, allowed_hosts=hostnames)
+        app.add_middleware(LocalHostMiddleware, static_hosts=hostnames)
         @app.exception_handler(Problem)
         async def problem(_request, exc):
             return JSONResponse({'detail': exc.message}, exc.status, headers={'Retry-After': '60'} if exc.status == 429 else {})

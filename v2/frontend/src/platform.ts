@@ -34,7 +34,14 @@ export interface Platform{
 let csrf='';
 export class PlatformError extends Error{status:number;constructor(message:string,status:number){super(message);this.status=status;}}
 export const errorText=(e:unknown)=>e instanceof Error?e.message:'Something went wrong. Your saved readings are still here.';
-export async function request<T=any>(path:string,body?:unknown):Promise<T>{const r=await fetch('/api/v2'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{...(body===undefined?{}:{'Content-Type':'application/json'}),...(csrf?{'X-CSRF-Token':csrf}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});if(!r.ok){let message='Could not connect. Check that the RiverGuard V2 service is running.';try{const v=await r.json();message=typeof v.detail==='string'?v.detail:typeof v.error==='string'?v.error:typeof v.message==='string'?v.message:message;}catch{}throw new PlatformError(message,r.status);}return r.json();}
+export async function request<T=any>(path:string,body?:unknown):Promise<T>{
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+ try{
+  const r=await fetch('/api/v2'+path,{signal:controller.signal,method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{...(body===undefined?{}:{'Content-Type':'application/json'}),...(csrf?{'X-CSRF-Token':csrf}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
+  if(!r.ok){let message='Could not connect. Check that the RiverGuard V2 service is running.';try{const v=await r.json();message=typeof v.detail==='string'?v.detail:typeof v.error==='string'?v.error:typeof v.message==='string'?v.message:message;}catch{}throw new PlatformError(message,r.status);}
+  return await r.json();
+ }catch(e){if(controller.signal.aborted)throw new PlatformError('The service took too long to respond. Check the connection and retry.',408);throw e;}finally{clearTimeout(timer);}
+}
 export async function session(){if(native)return true;const result=await request<{authenticated:boolean;csrf?:string}>('/session');csrf=result.csrf??'';return result.authenticated;}
 export async function signIn(kind:'bootstrap'|'pair',value:string){await request('/'+kind,{[kind==='pair'?'code':'token']:value});if(!await session())throw new Error('Could not establish this browser session. Start RiverGuard V2 again.');}
 export async function download(name:string,content:Blob|string,mime='text/plain'){const url=URL.createObjectURL(content instanceof Blob?content:new Blob([content],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return {saved:true};}

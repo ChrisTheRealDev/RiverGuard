@@ -88,7 +88,7 @@ def test_settings_cas_snapshot_and_verification_reset(store):
     cfg = settings(); first = store.save_settings('river-01', 0, cfg)
     assert first['revision'] == 1
     store.save_watch('esp32', 'river-01', 0, {'elevated': 10, 'warning': 20, 'rise_limit': 10})
-    store.ingest('river-01', packet(sample='ack-1', revision=1))
+    ack=packet(sample='ack-1',revision=1);ack['raw']['turbidity_mv']=1800;ack['sensor_health']['turbidity']='ok';store.ingest('river-01',ack)
     cfg['verified'] = True
     assert store.save_settings('river-01', 1, cfg)['settings']['verified'] is True
     store.ingest('river-01', packet(revision=2))

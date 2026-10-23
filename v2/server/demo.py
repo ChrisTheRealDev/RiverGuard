@@ -8,13 +8,24 @@ INITIAL = {'revision': 0, 'scenario': SCENARIOS[0], 'running': True, 'step': 0, 
 
 def sample(scenario, step, now):
     phase = step % 120
-    wave = math.sin(phase*.7)
-    result = dict(timestamp=iso(now), ph=7.2+.08*wave, turbidity=14+2*wave,
-                  temperature=27+.2*wave, water_level=30+.15*wave, scenario=scenario)
+    # Time changes the seed between cycles; replaying a captured time is reproducible.
+    seed = int(now//240000) % 1000003
+    def random_at(index, channel):
+        x = (index + channel*131 + seed*8191) & 0xffffffff
+        for _ in range(2):
+            x = ((x ^ (x >> 16)) * 0x45d9f3b) & 0xffffffff
+        return (x ^ (x >> 16))/4294967295*2-1
+    def variation(channel, span=5):
+        position = phase/span; index = math.floor(position); t = position-index
+        blend = t*t*(3-2*t)
+        drift = random_at(index, channel)*(1-blend)+random_at(index+1, channel)*blend
+        return .8*drift+.2*random_at(phase, channel+50)
+    result = dict(timestamp=iso(now), ph=7.2+.12*variation(1), turbidity=14+4*variation(2),
+                  temperature=27+.25*variation(3,20), water_level=30+.3*variation(4), scenario=scenario)
     if phase >= 10:
-        if scenario == SCENARIOS[1]: result['turbidity'] = min(250, 65+(phase-10)*2)
-        if scenario == SCENARIOS[2]: result.update(ph=5.8, turbidity=80)
-        if scenario == SCENARIOS[3]: result['water_level'] = min(150, 45+(phase-10)*4)
+        if scenario == SCENARIOS[1]: result['turbidity'] = 65+120*(1-math.exp(-(phase-10)/24))+6*variation(2)
+        if scenario == SCENARIOS[2]: result.update(ph=5.8+.12*variation(1), turbidity=80+8*variation(2))
+        if scenario == SCENARIOS[3]: result['water_level'] = 45+100*(1-math.exp(-(phase-10)/20))+.6*variation(4)
     return result
 
 
