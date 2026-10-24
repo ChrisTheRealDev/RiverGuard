@@ -1,4 +1,4 @@
-name: RiverGuard V2 preview
+name: RiverGuard Android release
 
 on:
   workflow_dispatch:
@@ -76,17 +76,19 @@ jobs:
       - name: Verify APK and collect evidence
         run: |
           mkdir -p v2/mobile/release
-          cp v2/mobile/android/app/build/outputs/apk/release/app-release.apk v2/mobile/release/RiverGuard-V2-Preview.apk
+          cp v2/mobile/android/app/build/outputs/apk/release/app-release.apk v2/mobile/release/RiverGuard-Android-2.3.0.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs v2/mobile/release/*.apk > v2/mobile/release/signature-verification.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging v2/mobile/release/*.apk > v2/mobile/release/apk-details.txt
           grep -q "package: name='com.riverguard.v2'" v2/mobile/release/apk-details.txt
+          grep -q "versionCode='7' versionName='2.3.0'" v2/mobile/release/apk-details.txt
+          if grep -q 'application-debuggable' v2/mobile/release/apk-details.txt; then exit 1; fi
           unzip -l v2/mobile/release/*.apk | grep 'assets/public/index.html'
           (cd v2/mobile/release && sha256sum *.apk > SHA256SUMS.txt)
           cp v2/mobile/android/app/build/reports/lint-results-release.html v2/mobile/release/
           cp v2/mobile/android/app/build/test-results/testReleaseUnitTest/*.xml v2/mobile/release/
       - uses: actions/upload-artifact@v4
         with:
-          name: RiverGuard-V2-Preview
+          name: RiverGuard-Android-2.3.0
           path: v2/mobile/release/
           if-no-files-found: error
       - name: Remove temporary signing material
